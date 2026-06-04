@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanim Henna - Admin Panel</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        plum: '#3A2A42',
+                        gold: '#D4AF37',
+                        lavender: '#F4F1F8',
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-lavender text-plum font-sans antialiased min-h-screen">
+
+    <!-- CRITICAL: Execute Session Guard immediately before rendering content -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+
+    <!-- Top Navigation -->
+    <header class="bg-white shadow-sm border-b border-gold/20 px-6 py-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="assets/icons/H.jpg" alt="Logo" class="h-8 w-8 rounded-full border border-gold object-cover">
+                <h1 class="text-xl font-serif font-bold text-plum tracking-wide">Zon Pentadbir</h1>
+            </div>
+            
+            <button id="logout-btn" class="flex items-center gap-2 text-sm font-semibold text-plum/70 hover:text-plum transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+                <span class="hidden sm:inline">Log Keluar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="pb-24 pt-4 max-w-4xl mx-auto">
+        
+        <!-- DASHBOARD VIEW -->
+        <section id="view-dashboard" class="p-4 block transition-opacity duration-300">
+            <h2 class="text-2xl font-serif font-bold mb-4 text-plum px-2">Rumusan Utama</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-plum/5 p-6 flex flex-col items-center justify-center">
+                    <span class="text-4xl font-bold text-plum mb-2" id="stat-bookings">-</span>
+                    <span class="text-[10px] font-bold text-plum/50 uppercase tracking-widest text-center">Jumlah Tempahan</span>
+                </div>
+                <div class="bg-white rounded-[1.5rem] shadow-sm border border-plum/5 p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-gold/10 rounded-full blur-xl"></div>
+                    <span class="text-4xl font-bold text-gold mb-2 relative z-10" id="stat-pending">-</span>
+                    <span class="text-[10px] font-bold text-plum/50 uppercase tracking-widest text-center relative z-10">Pending Deposit</span>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-plum text-white rounded-[1.5rem] p-6 shadow-md relative overflow-hidden">
+                <div class="absolute right-0 top-0 opacity-10">
+                    <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
+                </div>
+                <h3 class="text-lg font-serif font-bold mb-1 relative z-10">Peringatan</h3>
+                <p class="text-sm opacity-80 relative z-10">Sila sentiasa kemaskini status bayaran pelanggan di modul Bayaran untuk mengelakkan kekeliruan.</p>
+            </div>
+        </section>
+
+        <!-- KALENDAR VIEW -->
+        <section id="view-kalendar" class="p-4 hidden transition-opacity duration-300">
+            <h2 class="text-2xl font-serif font-bold mb-4 text-plum px-2">Jadual Semasa</h2>
+            <div class="bg-white rounded-[2rem] shadow-sm p-6 border border-plum/5">
+                <div class="flex justify-between items-center mb-6">
+                    <button id="cal-prev" class="text-gold hover:text-plum font-bold text-xl p-2">&lt;</button>
+                    <span id="cal-month" class="font-serif font-bold text-lg tracking-wide">...</span>
+                    <button id="cal-next" class="text-gold hover:text-plum font-bold text-xl p-2">&gt;</button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center text-xs mb-4 font-semibold text-plum/40">
+                    <div>A</div><div>I</div><div>S</div><div>R</div><div>K</div><div>J</div><div>S</div>
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-2 text-center text-sm font-medium">
+                    <!-- JS populated -->
+                </div>
+                <p class="text-[10px] text-center mt-6 text-plum/50 font-medium">Klik pada mana-mana tarikh kosong untuk tambah tempahan manual.</p>
+            </div>
+        </section>
+
+        <!-- BAYARAN VIEW -->
+        <section id="view-bayaran" class="p-4 hidden transition-opacity duration-300">
+            <h2 class="text-2xl font-serif font-bold mb-4 text-plum px-2">Modul Bayaran</h2>
+            <div id="bayaran-list" class="space-y-4">
+                <!-- JS populated -->
+                <div class="text-center py-10 opacity-50 text-sm font-medium">Memuatkan data...</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-plum/5 shadow-[0_-5px_20px_rgb(58,42,66,0.03)] z-40">
+        <div class="flex justify-around items-center h-16 max-w-md mx-auto px-2">
+            <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-gold transition-colors" data-target="view-dashboard">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                <span class="text-[10px] font-bold">Utama</span>
+            </button>
+            <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-plum/30 hover:text-plum transition-colors" data-target="view-kalendar">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                <span class="text-[10px] font-bold">Kalendar</span>
+            </button>
+            <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-plum/30 hover:text-plum transition-colors" data-target="view-bayaran">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
+                <span class="text-[10px] font-bold">Bayaran</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Bottom Sheet Form (Add Booking) -->
+    <div id="admin-sheet-backdrop" class="fixed inset-0 bg-plum/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="admin-sheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] z-50 transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgb(58,42,66,0.15)] max-h-[90vh] overflow-y-auto">
+        <div class="p-6 pb-safe">
+            <div class="w-12 h-1.5 bg-lavender rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-serif font-bold text-center mb-6 text-plum">Tambah Tempahan</h3>
+            
+            <form id="admin-booking-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Nama Pelanggan</label>
+                    <input type="text" id="add-name" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Tarikh</label>
+                    <input type="date" id="add-date" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Masa Mula</label>
+                        <input type="time" id="add-start" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Masa Tamat</label>
+                        <input type="time" id="add-end" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Details Lokasi Map</label>
+                    <input type="text" id="add-location" required placeholder="Cth: Alor Setar, Kedah" class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Pakej Inai</label>
+                    <select id="add-package" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                        <option value="" disabled selected>Pilih Pakej</option>
+                    </select>
+                </div>
+                <button type="submit" id="add-submit-btn" class="w-full mt-4 bg-plum text-white font-bold py-4 rounded-xl shadow-lg hover:bg-[#2D1B36] active:scale-[0.98] transition-all">Simpan Rekod</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Soft Warning Overlay -->
+    <div id="warning-overlay" class="fixed inset-0 bg-plum/60 backdrop-blur-md z-[60] hidden flex-col items-center justify-center p-6 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-lg font-serif font-bold text-plum mb-2">Amaran Bertindih</h3>
+            <p class="text-xs text-plum/70 mb-6 font-medium leading-relaxed">Tarikh ini telah mempunyai tempahan. Pastikan masa tidak bertindih dengan pelanggan sedia ada.</p>
+            <div class="flex gap-3">
+                <button id="warn-cancel" class="flex-1 py-3 bg-lavender text-plum font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm">Batal</button>
+                <button id="warn-confirm" class="flex-1 py-3 bg-gold text-white font-semibold rounded-xl hover:bg-[#c4a132] transition-colors shadow-md text-sm">Teruskan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
