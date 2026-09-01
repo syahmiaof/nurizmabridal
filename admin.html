@@ -1,189 +1,590 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hanim Henna - Admin Panel</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hanim Henna - Daily Tracker</title>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Google Fonts -->
+    <link rel="icon" type="image/png" href="assets/icons/logo.png">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&family=Pinyon+Script&display=swap"
+        rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Config & Auth -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        plum: '#3A2A42',
+                        dark: '#0A0A0A',
+                        charcoal: '#1A1A1A',
                         gold: '#D4AF37',
-                        lavender: '#F4F1F8',
+                        ivory: '#E0E0E0',
                     },
                     fontFamily: {
-                        serif: ['Playfair Display', 'serif'],
                         sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        script: ['Pinyon Script', 'cursive']
                     }
                 }
             }
         }
     </script>
-    
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #E0E0E0;
+            overscroll-behavior: none;
+            color-scheme: dark;
+        }
+
+        /* Hide native calendar icon and make it cover the input for clicking */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="month"]::-webkit-calendar-picker-indicator {
+            opacity: 0 !important;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+
+        /* Custom Scrollbar for Chrome, Safari and Opera */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Specific Scrollbar for Horizontal Date Slider */
+        .custom-scrollbar::-webkit-scrollbar {
+            display: block;
+            height: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 0 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.4);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.8);
+        }
+
+        /* Premium Gold Gradient Text */
+        .text-gradient-gold {
+            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            padding-bottom: 0.15em;
+        }
+
+        .hover-glow-gold {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
+        }
+
+        .hover-glow-gold:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L90YTDNDCB"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-L90YTDNDCB');
+    </script>
+
 </head>
-<body class="bg-lavender text-plum font-sans antialiased min-h-screen">
 
-    <!-- CRITICAL: Execute Session Guard immediately before rendering content -->
-    <script src="js/config.js"></script>
-    <script src="js/auth.js"></script>
+<body
+    class="min-h-screen flex justify-center bg-black selection:bg-gold selection:text-black relative overflow-y-auto overflow-x-hidden">
 
-    <!-- Top Navigation -->
-    <header class="bg-white shadow-sm border-b border-gold/20 px-6 py-4 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <!-- Live Starfield Background -->
+    <canvas id="starfield" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-100"></canvas>
+
+    <!-- MOBILE WRAPPER START -->
+    <div
+        class="w-full max-w-[480px] min-h-[100dvh] relative flex flex-col bg-dark/80 backdrop-blur-2xl shadow-2xl shadow-gold/5 mx-auto border-x border-white/5 z-10">
+
+        <!-- Header -->
+        <header class="pt-8 pb-4 px-6 flex justify-between items-center z-10 shrink-0">
             <div class="flex items-center gap-3">
-                <img src="assets/icons/H.jpg" alt="Logo" class="h-8 w-8 rounded-full border border-gold object-cover">
-                <h1 class="text-xl font-serif font-bold text-plum tracking-wide">Zon Pentadbir</h1>
+                <img src="assets/icons/logo.png" alt="Hanim Henna Logo" class="h-10 w-10 object-contain">
+                <span class="font-script text-3xl text-gradient-gold mt-2 inline-block cursor-default">Hanim
+                    Henna</span>
             </div>
-            
-            <button id="logout-btn" class="flex items-center gap-2 text-sm font-semibold text-plum/70 hover:text-plum transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                </svg>
-                <span class="hidden sm:inline">Log Keluar</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="openModal('report-modal')"
+                    class="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center bg-dark/80 backdrop-blur-md shadow-[0_0_10px_rgba(212,175,55,0.2)] hover:bg-gold/20 hover:border-gold transition-all text-gold group"
+                    title="Laporan Penuh">
+                    <i class="fas fa-chart-bar group-hover:scale-110 transition-transform"></i>
+                </button>
+                <button id="logout-btn"
+                    class="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center bg-dark/80 backdrop-blur-md shadow-[0_0_10px_rgba(212,175,55,0.2)] hover:bg-gold/20 hover:border-gold transition-all text-gold group"
+                    title="Log Keluar">
+                    <i class="fas fa-sign-out-alt group-hover:scale-110 transition-transform"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Date Controls & Slider -->
+        <div class="px-6 mb-4 shrink-0 relative z-10 flex flex-col gap-2">
+            <div class="flex justify-end relative inline-block group">
+                <label
+                    class="relative flex items-center gap-2 text-gold bg-charcoal/80 border border-gold/30 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-gold/20 transition-all shadow-[0_0_10px_rgba(212,175,55,0.1)] cursor-pointer overflow-hidden m-0">
+                    <i class="fas fa-calendar-alt"></i> Pilih Bulan / Tahun
+                    <input type="date" id="admin-date-picker"
+                        class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+                </label>
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory custom-scrollbar" id="date-slider">
+                <!-- Dates will be populated by JS -->
+            </div>
         </div>
-    </header>
 
-    <!-- Main Content Area -->
-    <main class="pb-24 pt-4 max-w-4xl mx-auto">
-        
-        <!-- DASHBOARD VIEW -->
-        <section id="view-dashboard" class="p-4 block transition-opacity duration-300">
-            <h2 class="text-2xl font-serif font-bold mb-4 text-plum px-2">Rumusan Utama</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white rounded-[1.5rem] shadow-sm border border-plum/5 p-6 flex flex-col items-center justify-center">
-                    <span class="text-4xl font-bold text-plum mb-2" id="stat-bookings">-</span>
-                    <span class="text-[10px] font-bold text-plum/50 uppercase tracking-widest text-center">Jumlah Tempahan</span>
-                </div>
-                <div class="bg-white rounded-[1.5rem] shadow-sm border border-plum/5 p-6 flex flex-col items-center justify-center relative overflow-hidden">
-                    <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-gold/10 rounded-full blur-xl"></div>
-                    <span class="text-4xl font-bold text-gold mb-2 relative z-10" id="stat-pending">-</span>
-                    <span class="text-[10px] font-bold text-plum/50 uppercase tracking-widest text-center relative z-10">Pending Deposit</span>
-                </div>
+        <!-- Toggle Nav -->
+        <div class="px-6 mb-4 shrink-0 relative z-10">
+            <div class="flex bg-charcoal/80 backdrop-blur-md p-1.5 rounded-[1.5rem] border border-white/5 shadow-inner">
+                <button id="tab-servis" onclick="switchMainTab('servis')"
+                    class="flex-1 py-3 text-sm font-bold rounded-2xl bg-white/10 text-gold shadow-sm transition-all border border-white/5">
+                    Slot Servis
+                </button>
+                <button id="tab-produk" onclick="switchMainTab('produk')"
+                    class="flex-1 py-3 text-sm font-bold rounded-2xl text-ivory/50 hover:text-ivory transition-all">
+                    Jualan Produk
+                </button>
             </div>
-            
-            <div class="mt-8 bg-plum text-white rounded-[1.5rem] p-6 shadow-md relative overflow-hidden">
-                <div class="absolute right-0 top-0 opacity-10">
-                    <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
-                </div>
-                <h3 class="text-lg font-serif font-bold mb-1 relative z-10">Peringatan</h3>
-                <p class="text-sm opacity-80 relative z-10">Sila sentiasa kemaskini status bayaran pelanggan di modul Bayaran untuk mengelakkan kekeliruan.</p>
-            </div>
-        </section>
-
-        <!-- KALENDAR VIEW -->
-        <section id="view-kalendar" class="p-4 hidden transition-opacity duration-300">
-            <h2 class="text-2xl font-serif font-bold mb-4 text-plum px-2">Jadual Semasa</h2>
-            <div class="bg-white rounded-[2rem] shadow-sm p-6 border border-plum/5">
-                <div class="flex justify-between items-center mb-6">
-                    <button id="cal-prev" class="text-gold hover:text-plum font-bold text-xl p-2">&lt;</button>
-                    <span id="cal-month" class="font-serif font-bold text-lg tracking-wide">...</span>
-                    <button id="cal-next" class="text-gold hover:text-plum font-bold text-xl p-2">&gt;</button>
-                </div>
-                <div class="grid grid-cols-7 gap-1 text-center text-xs mb-4 font-semibold text-plum/40">
-                    <div>A</div><div>I</div><div>S</div><div>R</div><div>K</div><div>J</div><div>S</div>
-                </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-2 text-center text-sm font-medium">
-                    <!-- JS populated -->
-                </div>
-                <p class="text-[10px] text-center mt-6 text-plum/50 font-medium">Klik pada mana-mana tarikh kosong untuk tambah tempahan manual.</p>
-            </div>
-        </section>
-
-        <!-- BAYARAN VIEW -->
-        <section id="view-bayaran" class="p-4 hidden transition-opacity duration-300">
-            <h2 class="text-2xl font-serif font-bold mb-4 text-plum px-2">Modul Bayaran</h2>
-            <div id="bayaran-list" class="space-y-4">
-                <!-- JS populated -->
-                <div class="text-center py-10 opacity-50 text-sm font-medium">Memuatkan data...</div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-plum/5 shadow-[0_-5px_20px_rgb(58,42,66,0.03)] z-40">
-        <div class="flex justify-around items-center h-16 max-w-md mx-auto px-2">
-            <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-gold transition-colors" data-target="view-dashboard">
-                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                <span class="text-[10px] font-bold">Utama</span>
-            </button>
-            <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-plum/30 hover:text-plum transition-colors" data-target="view-kalendar">
-                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
-                <span class="text-[10px] font-bold">Kalendar</span>
-            </button>
-            <button class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-plum/30 hover:text-plum transition-colors" data-target="view-bayaran">
-                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
-                <span class="text-[10px] font-bold">Bayaran</span>
-            </button>
         </div>
-    </nav>
 
-    <!-- Bottom Sheet Form (Add Booking) -->
-    <div id="admin-sheet-backdrop" class="fixed inset-0 bg-plum/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
-    <div id="admin-sheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] z-50 transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgb(58,42,66,0.15)] max-h-[90vh] overflow-y-auto">
-        <div class="p-6 pb-safe">
-            <div class="w-12 h-1.5 bg-lavender rounded-full mx-auto mb-6"></div>
-            <h3 class="text-xl font-serif font-bold text-center mb-6 text-plum">Tambah Tempahan</h3>
-            
-            <form id="admin-booking-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Nama Pelanggan</label>
-                    <input type="text" id="add-name" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+        <!-- Main Content Area -->
+        <div class="px-6 pb-32 relative z-0" id="main-content">
+
+            <!-- VIEW: SLOT SERVIS -->
+            <div id="view-servis" class="block">
+                <div class="flex justify-between items-center mb-4 pl-1">
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-lg font-bold font-serif text-white tracking-wide">Jadual Masa</h2>
+                        <!-- View Mode Toggles -->
+                        <div
+                            class="flex bg-charcoal/80 backdrop-blur-md border border-white/10 rounded-xl p-1 gap-1 shadow-inner">
+                            <button onclick="changeViewMode('list')" id="btn-view-list"
+                                class="p-1.5 px-2 bg-white/10 text-gold rounded-lg transition-colors shadow-sm"
+                                title="Senarai"><i class="fas fa-list text-xs"></i></button>
+                            <button onclick="changeViewMode('grid')" id="btn-view-grid"
+                                class="p-1.5 px-2 text-ivory/40 hover:text-ivory rounded-lg transition-colors"
+                                title="Grid Besar"><i class="fas fa-th-large text-xs"></i></button>
+                            <button onclick="changeViewMode('compact')" id="btn-view-compact"
+                                class="p-1.5 px-2 text-ivory/40 hover:text-ivory rounded-lg transition-colors"
+                                title="Grid Padat"><i class="fas fa-th text-xs"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openCustomBookingModal()"
+                            class="bg-gold/10 text-gold border border-gold/30 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-gold/20 transition-colors shadow-sm">
+                            + Masa Lain
+                        </button>
+                        <div class="bg-charcoal/80 backdrop-blur-sm border border-gold/30 px-3 py-1.5 rounded-full text-xs font-semibold text-gold shadow-[0_0_10px_rgba(212,175,55,0.1)] shrink-0"
+                            id="slot-count-badge">
+                            0 slot hari ini
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Tarikh</label>
-                    <input type="date" id="add-date" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+
+                <div id="time-slots-container" class="space-y-3 pb-32">
+                    <!-- Time slots populated by JS -->
                 </div>
+            </div>
+
+            <!-- VIEW: JUALAN PRODUK -->
+            <div id="view-produk" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Rekod Jualan</h2>
+                    <button onclick="openAddProductModal()"
+                        class="bg-gold/20 text-gold border border-gold/50 px-3 py-1 rounded-full text-xs font-bold hover:bg-gold/40 transition-colors">
+                        <i class="fas fa-plus"></i> Tambah
+                    </button>
+                </div>
+
+                <div id="product-sales-container" class="space-y-3 pb-6">
+                    <!-- JS Populated -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Fixed elements moved to body -->
+
+        <!-- Scripts -->
+        <script src="js/admin.js"></script>
+
+        <!-- Starfield Live Background Script -->
+        <script src="js/public.js" defer></script>
+    </div>
+    <!-- MOBILE WRAPPER END -->
+
+    <!-- Fixed Bottom Bar -->
+    <div
+        class="fixed bottom-0 w-full max-w-[480px] left-1/2 -translate-x-1/2 p-6 bg-charcoal/90 backdrop-blur-xl border-t border-white/5 flex gap-4 z-40 rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        <!-- Total Bookings -->
+        <div
+            class="flex-1 bg-dark/60 border border-white/10 rounded-2xl p-4 flex flex-col justify-center items-center relative overflow-hidden backdrop-blur-sm">
+            <div class="text-[9px] text-ivory/50 font-bold tracking-[0.2em] mb-1">TOTAL BOOKINGS</div>
+            <div class="flex items-baseline gap-1">
+                <span class="text-3xl font-bold text-white font-serif" id="bottom-total-slots">0</span>
+                <span class="text-xs text-ivory/40">slots</span>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div
+            class="flex-[1.5] bg-gradient-to-br from-gold/15 to-gold/5 border border-gold/30 rounded-2xl p-4 flex flex-col justify-center items-center relative overflow-hidden backdrop-blur-sm shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+            <div class="text-[9px] text-gold/70 font-bold tracking-[0.2em] mb-1">TOTAL REVENUE</div>
+            <div class="flex items-baseline gap-1">
+                <span class="text-sm font-bold text-gold">RM</span>
+                <span class="text-3xl font-bold text-gold font-serif" id="bottom-total-revenue">0.00</span>
+            </div>
+            <div class="text-[10px] text-ivory/60 mt-1 font-medium tracking-wide">
+                s <span id="rev-s" class="text-white font-bold">0.00</span> &bull;
+                p <span id="rev-p" class="text-white font-bold">0.00</span>
+            </div>
+            <i class="fas fa-arrow-trend-up absolute -bottom-3 -right-2 text-gold/10 text-6xl"></i>
+        </div>
+    </div>
+
+
+    <!-- MODALS -->
+
+    <!-- Add Booking Modal -->
+    <div id="add-booking-modal"
+        class="fixed inset-0 bg-dark/90 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+        <div
+            class="bg-charcoal border border-gold/20 rounded-[2rem] w-full max-w-md p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar">
+            <button onclick="closeModal('add-booking-modal')"
+                class="absolute top-4 right-4 text-ivory/50 hover:text-gold transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-xl font-serif font-bold text-gradient-gold mb-6">Tempahan Baru</h3>
+            <p class="text-sm text-ivory/60 mb-4" id="modal-time-label">Tarikh & Masa: -</p>
+
+            <form id="booking-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Masa Mula</label>
-                        <input type="time" id="add-start" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                        <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Tarikh</label>
+                        <input type="date" id="add-date" required
+                            class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Masa Tamat</label>
-                        <input type="time" id="add-end" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                        <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Masa</label>
+                        <input type="time" id="add-time" required
+                            class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Details Lokasi Map</label>
-                    <input type="text" id="add-location" required placeholder="Cth: Alor Setar, Kedah" class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Nama Pelanggan</label>
+                    <input type="text" id="add-name" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold mb-1 text-plum/70 ml-1">Pakej Inai</label>
-                    <select id="add-package" required class="w-full px-4 py-3.5 rounded-xl border-2 border-lavender bg-lavender/30 focus:bg-white focus:outline-none focus:border-gold">
-                        <option value="" disabled selected>Pilih Pakej</option>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Nombor Telefon</label>
+                    <input type="tel" id="add-phone" required placeholder="0123456789"
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Pakej Inai</label>
+                    <select id="add-package" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold appearance-none">
+                        <option value="">Pilih Pakej...</option>
+                        <!-- Loaded by JS -->
                     </select>
                 </div>
-                <button type="submit" id="add-submit-btn" class="w-full mt-4 bg-plum text-white font-bold py-4 rounded-xl shadow-lg hover:bg-[#2D1B36] active:scale-[0.98] transition-all">Simpan Rekod</button>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Harga Custom (RM) -
+                        Pilihan</label>
+                    <input type="number" id="add-custom-price" placeholder="Tinggalkan kosong untuk harga pakej"
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Kawasan (Bandar/Kawasan)</label>
+                    <input type="text" id="add-location" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <button type="submit"
+                    class="w-full mt-4 bg-gold text-dark font-bold py-4 rounded-xl shadow-[0_4px_15px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-[0.98] transition-all">
+                    Simpan Tempahan
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- Soft Warning Overlay -->
-    <div id="warning-overlay" class="fixed inset-0 bg-plum/60 backdrop-blur-md z-[60] hidden flex-col items-center justify-center p-6 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl">
-            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+    <!-- Edit Booking Modal -->
+    <div id="edit-booking-modal"
+        class="fixed inset-0 bg-dark/90 backdrop-blur-sm z-[110] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+        <div
+            class="bg-charcoal border border-gold/20 rounded-[2rem] w-full max-w-md p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar">
+            <button onclick="closeModal('edit-booking-modal')"
+                class="absolute top-4 right-4 text-ivory/50 hover:text-gold transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-xl font-serif font-bold text-gradient-gold mb-6">Kemaskini Tempahan</h3>
+
+            <form id="edit-booking-form" class="space-y-4">
+                <input type="hidden" id="edit-booking-id">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Tarikh</label>
+                        <input type="date" id="edit-date" required
+                            class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Masa</label>
+                        <input type="time" id="edit-time" required
+                            class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Nama Pelanggan</label>
+                    <input type="text" id="edit-name" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Nombor Telefon</label>
+                    <input type="tel" id="edit-phone" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Pakej Inai</label>
+                    <select id="edit-package" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold appearance-none">
+                        <option value="">Pilih Pakej...</option>
+                        <!-- Loaded by JS -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Harga Custom (RM)</label>
+                    <input type="number" id="edit-custom-price" placeholder="Tinggalkan kosong ikut harga asal pakej"
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Status Bayaran</label>
+                    <select id="edit-payment-status"
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold appearance-none">
+                        <option value="Pending Deposit">Pending Deposit</option>
+                        <option value="Deposit Dibayar">Deposit Paid</option>
+                        <option value="Selesai">Full Payment</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Kawasan (Bandar/Kawasan)</label>
+                    <input type="text" id="edit-location" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <button type="submit"
+                    class="w-full mt-4 bg-gold text-dark font-bold py-4 rounded-xl shadow-[0_4px_15px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-[0.98] transition-all">
+                    Simpan Perubahan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="booking-details-modal"
+        class="fixed inset-0 bg-dark/90 backdrop-blur-sm z-[70] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+        <div class="bg-charcoal border border-white/10 rounded-[2rem] p-6 max-w-sm w-full shadow-2xl relative">
+            <button onclick="closeModal('booking-details-modal')"
+                class="absolute top-4 right-4 text-ivory/50 hover:text-gold transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-xl font-serif font-bold text-gradient-gold mb-4">Maklumat Pelanggan</h3>
+            <div id="bd-content" class="text-sm space-y-3 mb-6 text-ivory">
+                <!-- JS populated -->
             </div>
-            <h3 class="text-lg font-serif font-bold text-plum mb-2">Amaran Bertindih</h3>
-            <p class="text-xs text-plum/70 mb-6 font-medium leading-relaxed">Tarikh ini telah mempunyai tempahan. Pastikan masa tidak bertindih dengan pelanggan sedia ada.</p>
-            <div class="flex gap-3">
-                <button id="warn-cancel" class="flex-1 py-3 bg-lavender text-plum font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm">Batal</button>
-                <button id="warn-confirm" class="flex-1 py-3 bg-gold text-white font-semibold rounded-xl hover:bg-[#c4a132] transition-colors shadow-md text-sm">Teruskan</button>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="bd-edit-btn"
+                    class="w-full bg-gold/10 text-gold border border-gold/30 font-bold py-3.5 rounded-xl hover:bg-gold/20 transition-colors shadow-md hidden">
+                    <i class="fas fa-edit mr-2"></i> Edit
+                </button>
+                <button id="bd-delete-btn"
+                    class="w-full bg-red-900/40 text-red-400 border border-red-500/30 font-bold py-3.5 rounded-xl hover:bg-red-900/60 transition-colors shadow-md hidden">
+                    <i class="fas fa-trash-alt mr-2"></i> Batal
+                </button>
             </div>
         </div>
     </div>
 
-    <script src="js/admin.js"></script>
+    <!-- Add Product Modal -->
+    <div id="add-product-modal"
+        class="fixed inset-0 bg-dark/90 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+        <div class="bg-charcoal border border-gold/20 rounded-[2rem] w-full max-w-md p-6 shadow-2xl relative">
+            <button onclick="closeModal('add-product-modal')"
+                class="absolute top-4 right-4 text-ivory/50 hover:text-gold transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-xl font-serif font-bold text-gradient-gold mb-6">Rekod Jualan Baru</h3>
+            <form id="product-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Nama Item / Produk</label>
+                    <input type="text" id="prod-name" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold"
+                        placeholder="Contoh: Inai Celup Merah">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Harga (RM)</label>
+                    <input type="number" step="0.01" id="prod-price" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <button type="submit"
+                    class="w-full mt-4 bg-gold text-dark font-bold py-4 rounded-xl shadow-[0_4px_15px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-[0.98] transition-all">
+                    Simpan Jualan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="edit-product-modal"
+        class="fixed inset-0 bg-dark/90 backdrop-blur-sm z-[110] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+        <div class="bg-charcoal border border-gold/20 rounded-[2rem] w-full max-w-md p-6 shadow-2xl relative">
+            <button onclick="closeModal('edit-product-modal')"
+                class="absolute top-4 right-4 text-ivory/50 hover:text-gold transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-xl font-serif font-bold text-gradient-gold mb-6">Kemaskini Jualan Produk</h3>
+            <form id="edit-product-form" class="space-y-4">
+                <input type="hidden" id="edit-prod-id">
+                <input type="hidden" id="edit-prod-date">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Nama Item / Produk</label>
+                    <input type="text" id="edit-prod-name" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/70 ml-1">Harga (RM)</label>
+                    <input type="number" step="0.01" id="edit-prod-price" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold">
+                </div>
+                <button type="submit"
+                    class="w-full mt-4 bg-gold text-dark font-bold py-4 rounded-xl shadow-[0_4px_15px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-[0.98] transition-all">
+                    Simpan Kemaskini
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Modal (Full Screen) -->
+    <div id="report-modal"
+        class="fixed inset-0 bg-dark z-[100] hidden opacity-0 transition-opacity duration-300 flex flex-col overflow-hidden">
+        <div class="p-6 shrink-0 flex justify-between items-center bg-charcoal border-b border-white/10">
+            <h3 class="text-xl md:text-2xl font-serif font-bold text-gradient-gold">Laporan Penuh</h3>
+            <button onclick="closeModal('report-modal')" class="text-ivory/50 hover:text-gold transition-colors text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="flex border-b border-white/10 shrink-0 bg-charcoal">
+            <button onclick="window.switchRepTab('tempahan')" id="rep-tab-tempahan" class="flex-1 py-4 font-bold text-sm text-gold border-b-2 border-gold transition-colors">Tempahan Servis</button>
+            <button onclick="window.switchRepTab('jualan')" id="rep-tab-jualan" class="flex-1 py-4 font-bold text-sm text-ivory/50 border-b-2 border-transparent transition-colors">Jualan Produk</button>
+        </div>
+
+        <div class="p-4 border-b border-white/10 shrink-0 bg-dark flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div class="flex flex-1 w-full gap-3">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-ivory/50"></i>
+                    <input type="text" id="rep-search" onkeyup="window.filterReportTable()" placeholder="Cari nama, telefon, atau pakej..." class="w-full bg-charcoal border border-white/10 rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-gold placeholder:text-ivory/30">
+                </div>
+                <div class="relative flex items-center bg-charcoal border border-white/10 rounded-lg px-3 focus-within:border-gold">
+                    <span class="text-ivory/50 text-sm mr-2 whitespace-nowrap"><i class="fas fa-calendar-alt"></i> Bulan:</span>
+                    <div class="relative w-full overflow-hidden flex items-center">
+                        <input type="month" id="rep-month-filter" onchange="window.fetchReportData()" class="bg-transparent text-sm text-white focus:outline-none w-full py-2 relative z-20">
+                        <div id="month-overlay" class="absolute left-0 top-0 bottom-0 flex items-center pointer-events-none z-30 bg-charcoal" style="right: 25px;">
+                            <span class="text-white/50 text-sm">Semua Bulan</span>
+                        </div>
+                        <i class="fas fa-calendar-day text-gold absolute right-2 pointer-events-none z-30"></i>
+                    </div>
+                </div>
+            </div>
+            <button onclick="window.exportToCSV()" class="w-full md:w-auto bg-white/10 hover:bg-gold/20 text-gold border border-gold/30 rounded-lg py-2 px-4 text-sm font-bold transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-file-export"></i> Muat Turun CSV
+            </button>
+        </div>
+
+        <div class="p-4 md:p-6 overflow-y-auto flex-1 custom-scrollbar">
+            <!-- Tempahan View -->
+            <div id="rep-view-tempahan" class="space-y-4">
+                <div class="flex justify-between items-center bg-gold/10 border border-gold/20 p-4 rounded-xl">
+                    <span class="text-ivory text-sm">Jumlah Hasil Servis:</span>
+                    <span class="text-gold font-bold text-lg" id="rep-total-servis">RM 0.00</span>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-white/10 bg-dark">
+                    <table class="w-full text-left text-sm text-ivory/80 whitespace-nowrap">
+                        <thead class="bg-white/5 text-xs uppercase text-gold/70">
+                            <tr>
+                                <th class="px-4 py-3">Tarikh & Masa</th>
+                                <th class="px-4 py-3">Pelanggan</th>
+                                <th class="px-4 py-3">Pakej</th>
+                                <th class="px-4 py-3">Bayaran</th>
+                                <th class="px-4 py-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rep-table-tempahan" class="divide-y divide-white/5 bg-dark/50">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Jualan View -->
+            <div id="rep-view-jualan" class="hidden space-y-4">
+                <div class="flex justify-between items-center bg-gold/10 border border-gold/20 p-4 rounded-xl">
+                    <span class="text-ivory text-sm">Jumlah Hasil Jualan:</span>
+                    <span class="text-gold font-bold text-lg" id="rep-total-jualan">RM 0.00</span>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-white/10 bg-dark">
+                    <table class="w-full text-left text-sm text-ivory/80 whitespace-nowrap">
+                        <thead class="bg-white/5 text-xs uppercase text-gold/70">
+                            <tr>
+                                <th class="px-4 py-3">Tarikh</th>
+                                <th class="px-4 py-3">Item / Produk</th>
+                                <th class="px-4 py-3 text-right">Harga (RM)</th>
+                                <th class="px-4 py-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rep-table-jualan" class="divide-y divide-white/5 bg-dark/50">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
+
 </html>

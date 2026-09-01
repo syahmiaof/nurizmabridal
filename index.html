@@ -1,15 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hanim Henna - Keanggunan Di Hujung Jari</title>
-    
+    <title>Hanim Henna - Inai Eksklusif Pengantin Taiping</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/icons/logo.png">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,153 +20,939 @@
             theme: {
                 extend: {
                     colors: {
-                        plum: '#3A2A42',
+                        dark: '#0A0A0A',
+                        charcoal: '#1A1A1A',
                         gold: '#D4AF37',
-                        lavender: '#F4F1F8',
+                        ivory: '#E0E0E0'
                     },
                     fontFamily: {
                         serif: ['Playfair Display', 'serif'],
                         sans: ['Inter', 'sans-serif'],
+                        script: ['Pinyon Script', 'cursive']
                     }
                 }
             }
         }
     </script>
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body class="bg-lavender text-plum font-sans antialiased relative min-h-screen">
+    <!-- Supabase SDK & Config -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <style>
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
 
-    <!-- Sticky Header -->
-    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent py-5 px-6 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-            <img src="assets/icons/H.jpg" alt="Hanim Henna Logo" class="h-12 w-12 rounded-full shadow-lg object-cover border-2 border-gold bg-white">
-            <h1 class="text-2xl font-serif font-bold text-plum drop-shadow-sm tracking-wide">Hanim Henna</h1>
+        /* Premium Gold Gradient Text */
+        .text-gradient-gold {
+            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            padding-bottom: 0.15em;
+        }
+
+        .hover-glow-gold {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
+        }
+
+        .hover-glow-gold:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+        }
+
+        /* Custom Scrollbar for VVIP feel */
+        .social-icon {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .social-icon:hover {
+            transform: translateY(-5px) scale(1.1);
+            color: #D4AF37;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Ensure sections sit above the canvas background */
+        section,
+        nav,
+        footer {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0A0A0A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+    </style>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L90YTDNDCB"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-L90YTDNDCB');
+    </script>
+
+</head>
+
+<body class="bg-dark text-ivory font-sans antialiased min-h-screen relative">
+
+    <!-- Live Starfield Background -->
+    <canvas id="starfield" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-100"></canvas>
+
+    <!-- Navbar -->
+    <nav
+        class="bg-dark/90 backdrop-blur-md fixed w-full top-0 z-50 border-b border-gold/20 transition-all duration-300">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 md:gap-3">
+                <img src="assets/icons/logo.png" alt="Hanim Henna Logo" class="h-7 w-7 md:h-10 md:w-10 object-contain">
+                <span
+                    class="font-script text-2xl md:text-4xl text-gradient-gold hover-glow-gold mt-1 md:mt-2 inline-block cursor-default">Hanim
+                    Henna</span>
+            </div>
+            <div class="hidden md:flex gap-5 text-sm font-semibold tracking-wide">
+                <a href="#about" class="hover:text-gold transition-colors">Kenali Hanim</a>
+                <a href="#milestone" class="hover:text-gold transition-colors">Pencapaian</a>
+                <a href="#signature" class="hover:text-gold transition-colors">Kualiti</a>
+                <a href="#portfolio" class="hover:text-gold transition-colors">Galeri</a>
+                <a href="#testimonial" class="hover:text-gold transition-colors">Testimoni</a>
+                <a href="#faq" class="hover:text-gold transition-colors">FAQ</a>
+            </div>
+            <button onclick="openBooking()"
+                class="bg-gold text-dark px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#c4a132] transition-colors shadow-[0_0_15px_rgba(212,175,55,0.3)]">Semak
+                Slot</button>
         </div>
-    </header>
+    </nav>
 
     <!-- Hero Section -->
-    <section class="pt-40 pb-20 px-6 flex flex-col items-center text-center">
-        <h2 class="text-5xl md:text-6xl font-serif font-bold mb-6 leading-tight">Keanggunan<br><span class="text-gold">Di Hujung Jari</span></h2>
-        <p class="text-base md:text-lg opacity-80 max-w-sm md:max-w-md mx-auto leading-relaxed">Menyediakan perkhidmatan ukiran inai eksklusif untuk raja sehari dengan sentuhan premium dan mempesonakan.</p>
+    <section id="hero"
+        class="relative pt-32 pb-16 px-6 lg:pt-48 lg:pb-24 overflow-hidden flex items-center justify-center min-h-[75vh]">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-gold/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <span
+                class="inline-block py-1 px-3 rounded-full bg-gold/10 text-gold font-bold text-xs tracking-widest uppercase mb-6 border border-gold/20">Henna
+                Artist No 1 di Perak </span>
+            <h1 class="text-5xl md:text-7xl font-serif font-bold mb-6 text-white leading-tight">Keanggunan <span
+                    class="text-gold italic">Sentuhan Terakhir</span> Dihari Bahagia</h1>
+            <p class="text-lg md:text-xl opacity-80 mb-10 max-w-2xl mx-auto leading-relaxed text-ivory">Pakar seni lukis
+                inai pengantin berkonsepkan minimalis, eksklusif, dan menggunakan inai berkualiti tinggi dan premium
+                yang mesra kulit.
+            </p>
+            <button onclick="openBooking()"
+                class="bg-gold text-dark px-8 py-4 rounded-full text-sm font-bold uppercase tracking-widest hover:bg-[#c4a132] transition-transform transform hover:-translate-y-1 shadow-[0_10px_30px_rgba(212,175,55,0.4)]">Tempah
+                Slot Anda</button>
+        </div>
     </section>
 
-    <!-- About / Intro Section -->
-    <section class="px-6 pb-20 max-w-2xl mx-auto">
-        <div class="bg-white rounded-3xl p-8 shadow-sm border border-plum/5 text-center">
-            <h3 class="text-xl font-serif font-semibold text-gold mb-4">Mengenai Kami</h3>
-            <p class="text-sm md:text-base leading-relaxed opacity-90 text-plum">
-                Kami percaya setiap pengantin berhak merasa istimewa di hari bahagia mereka. Dengan rekaan ukiran inai yang halus dan kemas, kami memastikan memori indah anda terukir sempurna.
+    <!-- About Me Section -->
+    <section id="about" class="py-20 bg-charcoal px-6 border-y border-white/5">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
+            <!-- Profile Image -->
+            <div class="w-full md:w-1/2 relative">
+                <div class="absolute inset-0 bg-gold/20 rounded-[2rem] transform translate-x-4 translate-y-4"></div>
+                <img src="assets/img/1.png" alt="Hanim Henna Profile"
+                    class="relative z-10 rounded-[2rem] shadow-xl w-full h-[500px] object-cover border-4 border-dark transition-all duration-700">
+            </div>
+            <!-- Text Content -->
+            <div class="w-full md:w-1/2">
+                <span class="text-gold font-bold tracking-widest uppercase text-xs">Siapa Saya</span>
+                <h2 class="text-3xl md:text-5xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3 mb-6">Hai,
+                    Saya Hanim!</h2>
+                <p class="text-ivory/80 leading-relaxed mb-6 text-lg">
+                    Saya merupakan seorang pelukis inai profesional yang sangat mencintai seni halus. Dengan pengalaman
+                    lebih <strong class="text-gold">5 tahun</strong> dalam industri perkahwinan, matlamat utama saya
+                    adalah untuk menaikkan seri tangan setiap bakal pengantin agar tampil sempurna dan memukau pada hari
+                    bahagia mereka.
+                </p>
+                <p class="text-ivory/80 leading-relaxed mb-8 text-lg">
+                    Setiap garisan inai yang saya ukir dilakukan penuh teliti dari hati. Saya percaya, inai bukan
+                    sekadar perhiasan, ia adalah simbolik keanggunan seorang ratu sehari. Jom saya lukiskan corak impian
+                    awak!
+                </p>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Milestone / Stats Section -->
+    <section id="milestone" class="py-16 bg-transparent text-white px-6">
+        <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/10">
+            <div class="px-4">
+                <p class="text-4xl md:text-5xl font-serif font-bold text-gold mb-2">2021</p>
+                <p class="text-xs uppercase tracking-widest opacity-70 font-semibold">Tahun Bermula</p>
+            </div>
+            <div class="px-4">
+                <p class="text-4xl md:text-5xl font-serif font-bold text-gold mb-2"><span class="counter"
+                        data-target="2000">0</span>+</p>
+                <p class="text-xs uppercase tracking-widest opacity-70 font-semibold">Pelanggan Inai</p>
+            </div>
+            <div class="px-4">
+                <p class="text-4xl md:text-5xl font-serif font-bold text-gold mb-2"><span class="counter"
+                        data-target="500">0</span>+</p>
+                <p class="text-xs uppercase tracking-widest opacity-70 font-semibold">Pengantin Baru</p>
+            </div>
+            <div class="px-4">
+                <p
+                    class="text-2xl md:text-3xl font-serif font-bold text-gold mb-2 flex items-center justify-center h-full pb-6">
+                    Changkat Jering Perak </p>
+                <p class="text-xs uppercase tracking-widest opacity-70 font-semibold -mt-6">Lokasi Utama</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Signature & Kualiti -->
+    <section id="signature" class="py-20 bg-charcoal px-6 border-y border-white/5">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-gold font-bold tracking-widest uppercase text-xs">Kenapa Pilih Saya?</span>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3">Kualiti
+                    Tanpa Kompromi</h2>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div
+                    class="bg-dark p-8 rounded-3xl border border-gold/10 text-center hover:border-gold/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.1)] transition-all">
+                    <div
+                        class="w-16 h-16 mx-auto bg-charcoal rounded-full flex items-center justify-center mb-6 border border-gold/20 text-2xl">
+                        💎</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-white">Inai Premium Berkualiti</h3>
+                    <p class="text-sm opacity-70 leading-relaxed text-ivory">Menggunakan inai gred premium tertinggi
+                        yang dijamin berkualiti. Sangat selamat, mesra wuduk, dan sesuai untuk kulit sensitif pengantin.
+                    </p>
+                </div>
+                <div
+                    class="bg-dark p-8 rounded-3xl border border-gold/10 text-center hover:border-gold/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.1)] transition-all relative transform md:-translate-y-4">
+                    <div
+                        class="w-16 h-16 mx-auto bg-charcoal rounded-full flex items-center justify-center mb-6 border border-gold/20 text-2xl">
+                        ✒️</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-white">Seni Halus</h3>
+                    <p class="text-sm opacity-70 leading-relaxed text-ivory">Lukisan tangan (freehand) yang sangat
+                        teliti, kemas, dan simetri hasil dari pengalaman melukis ribuan corak. Seni yang tak lapuk dek
+                        zaman.</p>
+                </div>
+                <div
+                    class="bg-dark p-8 rounded-3xl border border-gold/10 text-center hover:border-gold/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.1)] transition-all">
+                    <div
+                        class="w-16 h-16 mx-auto bg-charcoal rounded-full flex items-center justify-center mb-6 border border-gold/20 text-2xl">
+                        ✨</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-white">Warna Memukau</h3>
+                    <p class="text-sm opacity-70 leading-relaxed text-ivory">Hasil warna merah pekat gelap (maroon) yang
+                        tahan lama, dijamin menaikkan seri urat tangan pengantin pada hari kejadian.</p>
+                </div>
+                <div
+                    class="bg-dark p-8 rounded-3xl border border-gold/10 text-center hover:border-gold/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.1)] transition-all relative transform lg:-translate-y-4">
+                    <div
+                        class="w-16 h-16 mx-auto bg-charcoal rounded-full flex items-center justify-center mb-6 border border-gold/20 text-2xl">
+                        🛁</div>
+                    <h3 class="text-xl font-serif font-bold mb-3 text-white">Servis Cuci Percuma</h3>
+                    <p class="text-sm opacity-70 leading-relaxed text-ivory">Menyediakan servis ukir sehingga inai
+                        kering dan kami bantu cucikan inai pengantin secara percuma! Ini amat memudahkan urusan
+                        pengantin di hari bahagia tanpa perlu risau inai comot.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tips Penjagaan Inai -->
+    <section id="tips-penjagaan" class="py-20 bg-dark px-6 border-b border-white/5 relative overflow-hidden">
+        <div
+            class="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none">
+        </div>
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="text-center mb-16">
+                <span class="text-gold font-bold tracking-widest uppercase text-xs">Panduan Eksklusif</span>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3">Tips
+                    Penjagaan Inai</h2>
+                <p class="text-ivory/60 mt-4 text-sm max-w-2xl mx-auto">Ikuti 3 fasa penting ini untuk pastikan hasil
+                    inai anda meresap dengan sekata, warna naik pekat memukau dan tahan lebih lama.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Sebelum -->
+                <div
+                    class="bg-charcoal/50 backdrop-blur-sm p-8 rounded-[2rem] border border-white/10 hover:border-gold/30 transition-all relative">
+                    <div
+                        class="absolute -top-6 left-8 bg-gradient-to-br from-gold to-yellow-600 text-dark font-bold px-4 py-2 rounded-xl text-sm shadow-lg">
+                        Langkah 1</div>
+                    <h3 class="text-2xl font-serif font-bold mb-6 text-white mt-4 border-b border-white/10 pb-4">Sebelum
+                        Berinai</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-gold mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Cuci tangan/kaki bersih dengan sabun.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-gold mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Sental (scrub/lulur) manja untuk buang sel kulit
+                                mati supaya warna lebih mudah meresap.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-times-circle text-red-400 mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Elakkan sapu losyen, pelembap, minyak atau serum
+                                di kawasan yang ingin diukir.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Semasa -->
+                <div
+                    class="bg-charcoal/50 backdrop-blur-sm p-8 rounded-[2rem] border border-white/10 hover:border-gold/30 transition-all relative md:-translate-y-4">
+                    <div
+                        class="absolute -top-6 left-8 bg-gradient-to-br from-gold to-yellow-600 text-dark font-bold px-4 py-2 rounded-xl text-sm shadow-lg">
+                        Langkah 2</div>
+                    <h3 class="text-2xl font-serif font-bold mb-6 text-white mt-4 border-b border-white/10 pb-4">Semasa
+                        Berinai</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-gold mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Duduk pada posisi yang paling selesa kerana
+                                proses melukis memakan masa (1 ke 3 jam).</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-gold mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Kurangkan pergerakan mengejut supaya ukiran inai
+                                kekal kemas, teliti dan tidak comot.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-circle text-yellow-400 mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Suhu bilik suam adalah yang terbaik (elakkan
+                                aircon terlalu sejuk) supaya inai cepat kering dan warna naik.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Selepas -->
+                <div
+                    class="bg-charcoal/50 backdrop-blur-sm p-8 rounded-[2rem] border border-white/10 hover:border-gold/30 transition-all relative">
+                    <div
+                        class="absolute -top-6 left-8 bg-gradient-to-br from-gold to-yellow-600 text-dark font-bold px-4 py-2 rounded-xl text-sm shadow-lg">
+                        Langkah 3</div>
+                    <h3 class="text-2xl font-serif font-bold mb-6 text-white mt-4 border-b border-white/10 pb-4">Selepas
+                        Berinai</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-gold mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Biarkan inai kering sekurang-kurangnya 4 - 6 jam
+                                atau semalaman untuk warna matang.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-gold mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Kikis/kupas sisa inai kering secara
+                                perlahan-lahan. Jangan basuh terus dengan air sabun!</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-gold mt-1 text-sm shrink-0"></i>
+                            <span class="text-sm opacity-80 text-ivory">Sapu sedikit minyak zaitun/baby oil/balm selepas
+                                cuci untuk mengunci warna dari cepat luntur.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Showcase -->
+    <section id="showcase-video" class="py-20 bg-charcoal px-6 border-b border-white/5 relative overflow-hidden">
+        <div
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none">
+        </div>
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
+            <!-- Video Container -->
+            <div class="w-full md:w-1/2 flex justify-center relative">
+                <div
+                    class="absolute inset-0 bg-gold/20 rounded-[2.5rem] transform translate-x-4 translate-y-4 blur-sm max-w-[320px] mx-auto">
+                </div>
+                <div
+                    class="relative z-10 w-full max-w-[320px] mx-auto aspect-[9/16] rounded-[2rem] overflow-hidden shadow-[0_10px_40px_rgba(212,175,55,0.2)] border-4 border-dark">
+                    <video src="assets/video/video.mp4" autoplay loop muted playsinline
+                        class="w-full h-full object-cover"></video>
+                </div>
+            </div>
+            <!-- Text Content -->
+            <div class="w-full md:w-1/2 text-center md:text-left">
+                <span class="text-gold font-bold tracking-widest uppercase text-xs">Karya Eksklusif</span>
+                <h2 class="text-3xl md:text-5xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3 mb-6">Seni
+                    Halus Di Hujung Jari</h2>
+                <p class="text-ivory/80 leading-relaxed mb-8 text-lg">
+                    Saksikan magis ukiran inai premium kami dari dekat. Hasil seni yang sangat teliti.
+                </p>
+                <button onclick="window.openBookingSheet()"
+                    class="bg-transparent border border-gold text-gold px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest hover:bg-gold hover:text-dark transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+                    Tempah Sekarang
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRANSFORMASI (BEFORE/AFTER SLIDER) -->
+    <section id="transformasi" class="py-20 px-6 bg-charcoal border-y border-white/5">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="text-gold font-bold tracking-widest uppercase text-xs">Transformasi Wow</span>
+            <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3 mb-10">Sentuhan
+                Magis Hanim</h2>
+
+            <div class="relative w-full aspect-[4/3] md:aspect-[2/1] rounded-[2rem] overflow-hidden cursor-ew-resize group select-none shadow-[0_10px_40px_rgba(212,175,55,0.15)] border-2 border-gold/20"
+                id="compare-container">
+                <!-- Before Image (Background, Full Width, Grayscale) -->
+                <img src="assets/img/magic/after.png" alt="Sebelum Inai"
+                    class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none brightness-75"
+                    draggable="false">
+
+                <!-- After Image (Overlay with clip-path) -->
+                <img src="assets/img/magic/beforee.png" alt="Selepas Inai"
+                    class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-[clip-path] duration-75"
+                    id="compare-after" style="clip-path: inset(0 0 0 50%)" draggable="false">
+
+                <!-- Slider Handle -->
+                <div class="absolute top-0 bottom-0 left-[50%] w-0.5 bg-gold z-10 pointer-events-none transition-all duration-75 shadow-[0_0_10px_rgba(212,175,55,0.8)]"
+                    id="compare-line">
+                    <div
+                        class="absolute top-1/2 left-1/2 -ml-4 -mt-4 w-8 h-8 bg-gold rounded-full shadow-[0_0_15px_rgba(212,175,55,0.8)] flex items-center justify-center transition-transform group-hover:scale-125 border-2 border-white">
+                        <svg class="w-5 h-5 text-dark transform rotate-90" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <p class="text-ivory/50 mt-6 text-sm font-medium tracking-wide">
+                <span class="inline-block mr-2">←</span> Leret pada garisan untuk melihat perbezaan <span
+                    class="inline-block ml-2">→</span>
             </p>
         </div>
     </section>
 
-    <!-- Portfolio Gallery (Masonry Placeholder) -->
-    <section class="px-6 pb-20 max-w-4xl mx-auto">
-        <h3 class="text-3xl font-serif font-bold mb-8 text-center">Koleksi Inai</h3>
-        <div class="columns-2 gap-4 space-y-4">
-            <div class="rounded-2xl w-full h-56 shadow-sm overflow-hidden border border-plum/10 relative group">
-                <img src="https://images.unsplash.com/photo-1606015049339-65ce038d8213?auto=format&fit=crop&q=80&w=600" alt="Henna Design" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+    <!-- KATALOG HARGA -->
+    <section id="katalog" class="py-20 px-6 bg-dark border-y border-white/5 relative overflow-hidden">
+        <div class="absolute right-0 top-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="text-center mb-16">
+                <span class="text-gold font-bold tracking-widest uppercase text-xs">Panduan Bajet</span>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3 mb-4">
+                    Katalog & Anggaran Harga</h2>
+                <p class="text-ivory/60 text-sm max-w-2xl mx-auto leading-relaxed">
+                    Pilih corak yang bersesuaian dengan bajet anda. Harga sebenar mungkin berbeza bergantung kepada
+                    perincian corak yang dipilih. Hubungi kami untuk sebut harga yang lebih tepat.
+                </p>
             </div>
-            <div class="rounded-2xl w-full h-72 shadow-sm overflow-hidden border border-plum/10 relative group">
-                <img src="https://images.unsplash.com/photo-1595225010640-5e36569eb5dc?auto=format&fit=crop&q=80&w=600" alt="Bride" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-            </div>
-            <div class="rounded-2xl w-full h-48 shadow-sm overflow-hidden border border-plum/10 relative group">
-                <img src="https://images.unsplash.com/photo-1544078755-d36802824cd0?auto=format&fit=crop&q=80&w=600" alt="Wedding Details" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-            </div>
-            <div class="rounded-2xl w-full h-64 shadow-sm overflow-hidden border border-plum/10 relative group">
-                <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600" alt="Wedding Setup" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-            </div>
-        </div>
-    </section>
 
-    <!-- Read-Only Calendar -->
-    <section class="px-6 pb-32 max-w-md mx-auto">
-        <h3 class="text-3xl font-serif font-bold mb-8 text-center">Jadual Kekosongan</h3>
-        <div class="bg-white rounded-[2rem] shadow-md p-6 border border-gold/30">
-            <div class="flex justify-between items-center mb-6 px-2">
-                <button class="text-gold hover:text-plum transition-colors font-bold text-xl">&lt;</button>
-                <span class="font-serif font-bold text-xl tracking-wide">Jun 2026</span>
-                <button class="text-gold hover:text-plum transition-colors font-bold text-xl">&gt;</button>
-            </div>
-            <div class="grid grid-cols-7 gap-1 text-center text-xs mb-4 font-semibold text-plum/50">
-                <div>A</div><div>I</div><div>S</div><div>R</div><div>K</div><div>J</div><div>S</div>
-            </div>
-            <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium">
-                <!-- Placeholder days -->
-                <div class="py-3 text-gray-300">31</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">1</div>
-                <div class="py-3 rounded-full bg-plum text-gold shadow-md">2</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">3</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">4</div>
-                <div class="py-3 rounded-full bg-plum text-gold shadow-md">5</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">6</div>
-                
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">7</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">8</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">9</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">10</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">11</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">12</div>
-                <div class="py-3 rounded-full hover:bg-lavender transition-colors cursor-pointer">13</div>
-            </div>
-            <div class="mt-8 flex items-center justify-center gap-3 bg-lavender p-3 rounded-xl">
-                <div class="w-3 h-3 rounded-full bg-plum"></div>
-                <p class="text-xs text-plum font-semibold tracking-wide">Telah Ditempah</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAB Semak Slot -->
-    <button id="fab-semak" class="fixed bottom-8 right-8 z-40 bg-gold text-plum w-16 h-16 rounded-full shadow-[0_8px_30px_rgb(212,175,55,0.4)] flex items-center justify-center hover:scale-110 hover:bg-[#c4a132] active:scale-95 transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-    </button>
-
-    <!-- Bottom Sheet Backdrop -->
-    <div id="booking-backdrop" class="fixed inset-0 bg-plum/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
-
-    <!-- Booking Bottom Sheet -->
-    <div id="booking-sheet" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2.5rem] z-50 transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgb(58,42,66,0.15)] border-t-2 border-gold/20 max-h-[90vh] overflow-y-auto">
-        <div class="p-8">
-            <div class="w-16 h-1.5 bg-lavender rounded-full mx-auto mb-8"></div>
-            <h3 class="text-2xl font-serif font-bold text-center mb-8 text-plum">Semak Slot & Tempahan</h3>
-            
-            <form id="booking-form" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-semibold mb-2 ml-1 text-plum/80">Nama Penuh</label>
-                    <input type="text" id="cust-name" required placeholder="Siti Nurhaliza" class="w-full px-5 py-4 rounded-2xl border-2 border-lavender bg-lavender/50 focus:bg-white focus:outline-none focus:border-gold focus:ring-0 transition-colors">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-semibold mb-2 ml-1 text-plum/80">Tarikh</label>
-                    <input type="date" id="cust-date" required class="w-full px-5 py-4 rounded-2xl border-2 border-lavender bg-lavender/50 focus:bg-white focus:outline-none focus:border-gold focus:ring-0 transition-colors text-plum">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-semibold mb-2 ml-1 text-plum/80">Pakej Inai</label>
-                    <div class="relative">
-                        <select id="cust-package" required class="w-full px-5 py-4 rounded-2xl border-2 border-lavender bg-lavender/50 focus:bg-white focus:outline-none focus:border-gold focus:ring-0 transition-colors appearance-none text-plum">
-                            <option value="" disabled selected>Sila Pilih Pakej</option>
-                            <option value="Basic">Pakej Basic - RM 150</option>
-                            <option value="Premium">Pakej Premium - RM 250</option>
-                            <option value="Exclusive">Pakej Exclusive - RM 350</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-5 text-gold">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Tier 1 -->
+                <div
+                    class="bg-charcoal/80 border border-white/10 rounded-[2rem] p-6 backdrop-blur-sm hover:border-gold/50 transition-all duration-500 hover:-translate-y-2 group shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-2xl font-serif font-bold text-white group-hover:text-gold transition-colors">
+                            Bawah RM 150</h4>
+                        <span
+                            class="text-[10px] bg-white/10 text-ivory/80 px-2 py-1 rounded-md uppercase tracking-widest font-bold">Minimalis</span>
+                    </div>
+                    <p class="text-sm text-ivory/70 mb-6 h-12 leading-relaxed">Sesuai untuk pengantin yang gemarkan
+                        corak ringkas, minimalis, atau sekadar ukiran manis di hujung jari.</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="aspect-square rounded-xl overflow-hidden border border-white/5">
+                            <img src="assets/img/bawah150/img1.jpeg"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                alt="Inai Bawah RM150">
+                        </div>
+                        <div class="aspect-square rounded-xl overflow-hidden border border-white/5">
+                            <img src="assets/img/bawah150/img2.jpeg"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 delay-75"
+                                alt="Inai Bawah RM150">
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold mb-2 ml-1 text-plum/80">Details Lokasi Map</label>
-                    <input type="text" id="cust-location" required placeholder="Contoh: Dewan Perdana FELDA..." class="w-full px-5 py-4 rounded-2xl border-2 border-lavender bg-lavender/50 focus:bg-white focus:outline-none focus:border-gold focus:ring-0 transition-colors">
+                <!-- Tier 2 -->
+                <div
+                    class="bg-charcoal/80 border border-gold/30 rounded-[2rem] p-6 backdrop-blur-sm hover:border-gold transition-all duration-500 hover:-translate-y-2 group shadow-[0_10px_30px_rgba(212,175,55,0.15)] relative md:-translate-y-4">
+                    <div
+                        class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gold to-[#AA771C] text-dark font-bold px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest shadow-lg">
+                        Paling Popular</div>
+                    <div class="flex justify-between items-start mb-4 mt-2">
+                        <h4 class="text-2xl font-serif font-bold text-white group-hover:text-gold transition-colors">
+                            Bawah RM 200</h4>
+                        <span
+                            class="text-[10px] bg-gold/20 text-gold px-2 py-1 rounded-md uppercase tracking-widest font-bold">Standard</span>
+                    </div>
+                    <p class="text-sm text-ivory/70 mb-6 h-12 leading-relaxed">Corak yang lebih padat dan teliti hingga
+                        ke pergelangan tangan. Pilihan yang paling popular untuk majlis nikah.</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="aspect-square rounded-xl overflow-hidden border border-white/5">
+                            <img src="assets/img/bawah200/img1.jpeg"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                alt="Inai Bawah RM200">
+                        </div>
+                        <div class="aspect-square rounded-xl overflow-hidden border border-white/5">
+                            <img src="assets/img/bawah200/img2.jpeg"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 delay-75"
+                                alt="Inai Bawah RM200">
+                        </div>
+                    </div>
                 </div>
 
-                <button type="submit" class="w-full mt-6 bg-gold text-white font-bold text-lg py-4 rounded-2xl shadow-[0_8px_20px_rgb(212,175,55,0.4)] hover:bg-[#c4a132] hover:shadow-[0_4px_10px_rgb(212,175,55,0.4)] active:scale-[0.98] transition-all tracking-wide">
-                    Hantar ke WhatsApp
+                <!-- Tier 3 -->
+                <div
+                    class="bg-charcoal/80 border border-white/10 rounded-[2rem] p-6 backdrop-blur-sm hover:border-gold/50 transition-all duration-500 hover:-translate-y-2 group shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-2xl font-serif font-bold text-white group-hover:text-gold transition-colors">
+                            Atas RM 250</h4>
+                        <span
+                            class="text-[10px] bg-white/10 text-ivory/80 px-2 py-1 rounded-md uppercase tracking-widest font-bold">Eksklusif</span>
+                    </div>
+                    <p class="text-sm text-ivory/70 mb-6 h-12 leading-relaxed">Seni ukiran penuh, mewah dan terperinci
+                        hingga melepasi lengan. Rekaan istimewa bak permaisuri.</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="aspect-square rounded-xl overflow-hidden border border-white/5">
+                            <img src="assets/img/atas250/img1.jpeg"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                alt="Inai Atas RM250">
+                        </div>
+                        <div class="aspect-square rounded-xl overflow-hidden border border-white/5">
+                            <img src="assets/img/atas250/img2.jpeg"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 delay-75"
+                                alt="Inai Atas RM250">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <button onclick="window.openBookingSheet()"
+                    class="bg-transparent border border-ivory/30 text-ivory px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest hover:border-gold hover:text-gold transition-all">
+                    Dapatkan Sebut Harga
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- KARYA SENI -->
+    <section id="portfolio" class="py-20 px-6 bg-transparent">
+        <div class="max-w-6xl mx-auto text-center">
+            <span class="text-gold font-bold tracking-widest uppercase text-xs">Karya Seni</span>
+            <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3 mb-10">Galeri
+                Hanim Henna</h2>
+
+
+            <!-- Masonry Grid -->
+            <div id="gallery-grid"
+                class="columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-2 md:gap-4 space-y-2 md:space-y-4">
+                <!-- JS populated -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Calendar Availability -->
+    <section id="ketersediaan" class="py-20 px-6 bg-dark/50 border-t border-white/5 relative">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <span class="text-gold font-bold tracking-widest uppercase text-xs">Jadual Semasa</span>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3">Semak
+                    Kekosongan Tarikh</h2>
+                <p class="text-ivory/70 mt-4 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+                    Tarikh yang diwarnakan <span class="text-red-500 font-bold">merah</span> telah penuh ditempah. Pilih
+                    tarikh kekosongan dan buat tempahan segera.
+                </p>
+            </div>
+
+            <div
+                class="bg-charcoal/60 backdrop-blur-md rounded-[2rem] shadow-[0_4px_15px_rgba(0,0,0,0.3)] p-6 md:p-8 border border-gold/10">
+                <div class="flex justify-between items-center mb-6">
+                    <button id="pub-cal-prev"
+                        class="text-gold hover:text-ivory font-bold text-2xl p-2 transition-colors">&lt;</button>
+                    <span id="pub-cal-month"
+                        class="font-serif font-bold text-xl md:text-2xl tracking-wide text-ivory">...</span>
+                    <button id="pub-cal-next"
+                        class="text-gold hover:text-ivory font-bold text-2xl p-2 transition-colors">&gt;</button>
+                </div>
+                <!-- Days Header -->
+                <div
+                    class="grid grid-cols-7 gap-2 mb-4 text-center text-xs font-bold text-gold/80 uppercase tracking-wider">
+                    <div>Aha</div>
+                    <div>Isn</div>
+                    <div>Sel</div>
+                    <div>Rab</div>
+                    <div>Kha</div>
+                    <div>Jum</div>
+                    <div>Sab</div>
+                </div>
+                <!-- Calendar Grid -->
+                <div id="pub-calendar-grid"
+                    class="grid grid-cols-7 gap-2 md:gap-4 text-center text-sm md:text-base font-medium">
+                    <!-- JS populated -->
+                </div>
+            </div>
+            <div class="mt-10 text-center">
+                <button onclick="openBookingSheet()"
+                    class="bg-gold text-dark font-bold py-4 px-8 rounded-full shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:bg-ivory hover:shadow-[0_4px_20px_rgba(255,255,255,0.4)] active:scale-95 transition-all uppercase tracking-widest text-sm inline-flex items-center gap-2">
+                    <i class="fas fa-calendar-plus"></i> Tempah Sekarang
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonial" class="py-20 bg-charcoal px-6 border-y border-white/5">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-gold font-bold tracking-widest uppercase text-xs">Feedback Client</span>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold mt-3">Apa Kata
+                    Pengantin?</h2>
+            </div>
+            <div class="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory">
+                <!-- Testimonial 1 -->
+                <div
+                    class="min-w-[85vw] md:min-w-[400px] snap-center p-8 rounded-3xl bg-dark border border-gold/10 hover:border-gold/30 transition-colors relative overflow-hidden group">
+                    <div
+                        class="absolute -right-4 -top-4 text-8xl text-white/5 font-serif group-hover:text-gold/5 transition-colors">
+                        "</div>
+                    <div class="flex text-gold mb-4 text-xl relative z-10">★★★★★</div>
+                    <p class="text-ivory italic font-medium leading-relaxed mb-6 relative z-10 opacity-90">"Cantik gila!
+                        Warna inai merah pekat and lukisan kemas sangat. Tak sia-sia book Hanim. Dia pun sangat friendly
+                        buat kita rasa selesa dan tak nervous nak nikah esok."</p>
+                    <div class="flex items-center gap-4 relative z-10">
+                        <img src="assets/img/malay_hijab_bride_1.png" alt="Aisyah"
+                            class="w-12 h-12 rounded-full object-cover border border-gold/30">
+                        <div>
+                            <p class="text-sm font-bold uppercase tracking-wider text-white">Aisyah</p>
+                            <p class="text-xs text-gold/80">Pengantin Taiping</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonial 2 -->
+                <div
+                    class="min-w-[85vw] md:min-w-[400px] snap-center p-8 rounded-3xl bg-dark border border-gold/10 hover:border-gold/30 transition-colors relative overflow-hidden group">
+                    <div
+                        class="absolute -right-4 -top-4 text-8xl text-white/5 font-serif group-hover:text-gold/5 transition-colors">
+                        "</div>
+                    <div class="flex text-gold mb-4 text-xl relative z-10">★★★★★</div>
+                    <p class="text-ivory italic font-medium leading-relaxed mb-6 relative z-10 opacity-90">"Paling suka
+                        servis Hanim, Hasilnya tahan lama, lepas majlis bertandang
+                        seminggu pun still nampak pekat kat jari!"</p>
+                    <div class="flex items-center gap-4 relative z-10">
+                        <img src="assets/img/malay_hijab_bride_2.png" alt="Nadia"
+                            class="w-12 h-12 rounded-full object-cover border border-gold/30">
+                        <div>
+                            <p class="text-sm font-bold uppercase tracking-wider text-white">Nabila</p>
+                            <p class="text-xs text-gold/80">Pengantin Kamunting</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonial 3 -->
+                <div
+                    class="min-w-[85vw] md:min-w-[400px] snap-center p-8 rounded-3xl bg-dark border border-gold/10 hover:border-gold/30 transition-colors relative overflow-hidden group">
+                    <div
+                        class="absolute -right-4 -top-4 text-8xl text-white/5 font-serif group-hover:text-gold/5 transition-colors">
+                        "</div>
+                    <div class="flex text-gold mb-4 text-xl relative z-10">★★★★★</div>
+                    <p class="text-ivory italic font-medium leading-relaxed mb-6 relative z-10 opacity-90">"Servis
+                        tiptop! Harga sangat berpatutan dengan kualiti. Inai langsung tak merekah dan lukisan sangat
+                        detail. Suami pun puji cantik!"</p>
+                    <div class="flex items-center gap-4 relative z-10">
+                        <img src="assets/img/malay_hijab_bride_3.png" alt="Farah"
+                            class="w-12 h-12 rounded-full object-cover border border-gold/30">
+                        <div>
+                            <p class="text-sm font-bold uppercase tracking-wider text-white">Farah</p>
+                            <p class="text-xs text-gold/80">Pengantin Ipoh</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonial 4 -->
+                <div
+                    class="min-w-[85vw] md:min-w-[400px] snap-center p-8 rounded-3xl bg-dark border border-gold/10 hover:border-gold/30 transition-colors relative overflow-hidden group">
+                    <div
+                        class="absolute -right-4 -top-4 text-8xl text-white/5 font-serif group-hover:text-gold/5 transition-colors">
+                        "</div>
+                    <div class="flex text-gold mb-4 text-xl relative z-10">★★★★★</div>
+                    <p class="text-ivory italic font-medium leading-relaxed mb-6 relative z-10 opacity-90">"Saya request
+                        design custom yang agak rumit, tapi Hanim buat dengan sangat teliti dan tenang. Warna inai letup
+                        habis waktu majlis sanding!"</p>
+                    <div class="flex items-center gap-4 relative z-10">
+                        <img src="assets/img/malay_hijab_bride_1.png" alt="Zulaikha"
+                            class="w-12 h-12 rounded-full object-cover border border-gold/30">
+                        <div>
+                            <p class="text-sm font-bold uppercase tracking-wider text-white">Siti</p>
+                            <p class="text-xs text-gold/80">Pengantin Kuala Kangsar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Scroll Hint -->
+            <p class="text-center text-sm text-ivory/50 mt-4 md:hidden animate-pulse">
+                <i class="fas fa-arrows-alt-h mr-2"></i>Scroll ke sebelah untuk lebih banyak feedback pengantin
+            </p>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-20 px-6 bg-transparent text-white relative overflow-hidden">
+        <div class="absolute -top-20 -left-20 w-80 h-80 bg-gold/5 rounded-full blur-3xl"></div>
+        <div class="max-w-3xl mx-auto relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-gradient-gold hover-glow-gold">Soalan Lazim
+                    (FAQ)</h2>
+            </div>
+            <div class="space-y-4">
+                <div class="border border-white/10 rounded-2xl p-6 bg-charcoal hover:border-gold/30 transition-colors">
+                    <h3 class="font-bold text-lg mb-2 text-white">Bila waktu terbaik untuk berinai?</h3>
+                    <div class="text-sm opacity-70 leading-relaxed text-ivory space-y-2 mt-2">
+                        <p><strong class="text-gold">Inai Merah:</strong> Sebaiknya diukir <strong
+                                class="text-white">sehari sebelum majlis</strong> supaya warna naik dengan pekat. Inai
+                            merah adalah sah dibawa solat.</p>
+                        <p><strong class="text-gold">Inai Putih:</strong> Disyorkan dilukis <strong
+                                class="text-white">pada hari majlis berlangsung</strong>. Inai putih bersifat kalis air
+                            (waterproof) dan tidak sah dibawa solat.</p>
+                    </div>
+                </div>
+                <div class="border border-white/10 rounded-2xl p-6 bg-charcoal hover:border-gold/30 transition-colors">
+                    <h3 class="font-bold text-lg mb-2 text-white">Ada caj pengangkutan (transport) tak?</h3>
+                    <p class="text-sm opacity-70 leading-relaxed text-ivory">Ya, harga pakej belum termasuk caj
+                        pengangkutan. Caj transport adalah berbeza-beza dan dikira berasingan berdasarkan jarak lokasi
+                        majlis anda dari tapak utama operasi kami di Changkat Jering, Perak.</p>
+                </div>
+                <div class="border border-white/10 rounded-2xl p-6 bg-charcoal hover:border-gold/30 transition-colors">
+                    <h3 class="font-bold text-lg mb-2 text-white">Berapa lama proses melukis inai?</h3>
+                    <p class="text-sm opacity-70 leading-relaxed text-ivory">Bergantung kepada kerumitan corak pilihan
+                        anda. Biasanya corak minimalis mengambil masa 45 minit - 1 jam, manakala corak penuh atau rekaan
+                        eksklusif boleh mengambil masa hingga 2 ke 3 jam.</p>
+                </div>
+                <div class="border border-white/10 rounded-2xl p-6 bg-charcoal hover:border-gold/30 transition-colors">
+                    <h3 class="font-bold text-lg mb-2 text-white">Boleh custom corak atau warna sendiri?</h3>
+                    <p class="text-sm opacity-70 leading-relaxed text-ivory">Sudah tentu boleh! Jika anda mempunyai
+                        rekaan impian atau inspirasi corak dari internet, hantarkan saja gambar tersebut kepada kami.
+                        Warna juga boleh dipilih samada merah maroon, coklat pekat, atau putih eksklusif mengikut tema
+                        majlis anda.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-12 border-t border-white/5 bg-transparent relative z-10">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
+            <!-- Left: Logo & Text -->
+            <div class="flex items-center gap-5">
+                <img src="assets/icons/logo.png" alt="Hanim Henna Logo" class="h-16 w-16 object-contain">
+                <div class="text-left">
+                    <h2
+                        class="font-script text-4xl text-gradient-gold hover-glow-gold cursor-default leading-none mb-1">
+                        Hanim Henna</h2>
+                    <p class="text-ivory/80 text-sm tracking-wide">Seni Ukiran Inai Tradisional & Moden</p>
+                </div>
+            </div>
+            <!-- Right: Social Media -->
+            <div class="flex items-center gap-4">
+                <a href="https://www.facebook.com/profile.php?id=61554632297441" target="_blank"
+                    class="group flex items-center h-10 rounded-full border border-gold/40 text-gold hover:bg-gold hover:text-dark hover:scale-105 transition-all duration-700 ease-in-out shadow-[0_0_10px_rgba(212,175,55,0.05)] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                    <div class="w-10 h-10 flex items-center justify-center shrink-0">
+                        <i class="fab fa-facebook-f text-lg"></i>
+                    </div>
+                    <span
+                        class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-[100px] transition-all duration-700 ease-in-out font-bold text-sm">
+                        <span class="pr-5">Facebook</span>
+                    </span>
+                </a>
+                <a href="https://www.instagram.com/haneem.henna?igsh=d3l3MHo1MjBrM2U3&utm_source=qr" target="_blank"
+                    class="group flex items-center h-10 rounded-full border border-gold/40 text-gold hover:bg-gold hover:text-dark hover:scale-105 transition-all duration-700 ease-in-out shadow-[0_0_10px_rgba(212,175,55,0.05)] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                    <div class="w-10 h-10 flex items-center justify-center shrink-0">
+                        <i class="fab fa-instagram text-lg"></i>
+                    </div>
+                    <span
+                        class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-[110px] transition-all duration-700 ease-in-out font-bold text-sm">
+                        <span class="pr-5">Instagram</span>
+                    </span>
+                </a>
+                <a href="https://www.tiktok.com/@inai_taiping?is_from_webapp=1&sender_device=pc" target="_blank"
+                    class="group flex items-center h-10 rounded-full border border-gold/40 text-gold hover:bg-gold hover:text-dark hover:scale-105 transition-all duration-700 ease-in-out shadow-[0_0_10px_rgba(212,175,55,0.05)] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                    <div class="w-10 h-10 flex items-center justify-center shrink-0">
+                        <i class="fab fa-tiktok text-lg"></i>
+                    </div>
+                    <span
+                        class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-[90px] transition-all duration-700 ease-in-out font-bold text-sm">
+                        <span class="pr-5">TikTok</span>
+                    </span>
+                </a>
+                <a href="https://www.threads.com/@haneem.henna?igshid=NTc4MTIwNjQ2YQ==" target="_blank"
+                    class="group flex items-center h-10 rounded-full border border-gold/40 text-gold hover:bg-gold hover:text-dark hover:scale-105 transition-all duration-700 ease-in-out shadow-[0_0_10px_rgba(212,175,55,0.05)] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                    <div class="w-10 h-10 flex items-center justify-center shrink-0">
+                        <i class="fa-brands fa-threads text-lg"></i>
+                    </div>
+                    <span
+                        class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-[100px] transition-all duration-700 ease-in-out font-bold text-sm">
+                        <span class="pr-5">Threads</span>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto px-6 border-t border-white/5 pt-6">
+            <p class="text-xs text-ivory/40 text-center md:text-left">&copy; 2026 Hanim Henna. Hak Cipta Terpelihara.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Floating WhatsApp CTA -->
+    <a href="https://wa.me/601123313495?text=Hai%20Hanim,%20saya%20berminat%20nak%20book%20inai%20pengantin"
+        target="_blank"
+        class="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:-translate-y-2 transition-all duration-700 ease-in-out flex items-center justify-center cursor-pointer group">
+        <svg class="w-8 h-8 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+        <span
+            class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-[160px] transition-all duration-700 ease-in-out font-bold ml-0 group-hover:ml-3">WhatsApp
+            Hanim</span>
+    </a>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal"
+        class="fixed inset-0 bg-dark/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-6 opacity-0 transition-opacity duration-300">
+        <div class="bg-charcoal border border-gold/20 rounded-3xl p-8 max-w-sm w-full shadow-2xl relative">
+            <button onclick="closeBooking()"
+                class="absolute top-4 right-4 text-white/30 hover:text-gold text-2xl font-bold transition-colors">&times;</button>
+            <h3 class="text-xl font-serif font-bold text-white mb-4 text-center">Semakan Tarikh</h3>
+            <p class="text-sm text-center text-ivory/70 mb-6 leading-relaxed">Sila hubungi Hanim di WhatsApp untuk
+                mengetahui sama ada slot majlis anda masih kosong.</p>
+            <a href="https://wa.me/601123313495?text=Hai%20Hanim,%20saya%20nak%20semak%20slot%20kosong%20untuk%20tarikh..."
+                class="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-4 rounded-xl shadow-lg hover:bg-[#1ebd59] transition-colors mb-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Terus ke WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- FOMO POPUP MODAL -->
+    <div id="fomo-modal"
+        class="fixed inset-0 bg-dark/90 backdrop-blur-sm z-[100] flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-500">
+        <div class="bg-charcoal border border-gold/30 rounded-[2rem] p-8 max-w-sm w-full text-center shadow-[0_0_30px_rgba(212,175,55,0.15)] transform scale-95 transition-transform duration-500 relative"
+            id="fomo-content">
+            <button id="close-fomo" class="absolute top-4 right-4 text-ivory/40 hover:text-gold transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <img src="assets/icons/logo.png" alt="Hanim Henna" class="w-14 h-14 mx-auto mb-4 object-contain">
+            <h3 class="text-4xl font-script text-gradient-gold mb-3 mt-1 leading-none">Hai, saya Hanim..</h3>
+            <p class="text-ivory/70 mb-7 leading-relaxed text-sm">
+                Tahniah atas hari bahagia yang bakal tiba! Saya amat berbesar hati jika diberi peluang untuk menyerikan
+                jemari anda. Memandangkan <strong class="text-gold font-serif font-medium tracking-wide">Slot 2026
+                    semakin terhad</strong>, jangan terlepas, jom tempah tarikh anda lebih awal.
+            </p>
+            <button
+                onclick="window.openBookingSheet(); document.getElementById('fomo-modal').classList.add('opacity-0', 'pointer-events-none');"
+                class="inline-block w-full border border-gold text-gold font-bold py-3.5 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.1)] hover:bg-gold hover:text-dark active:scale-[0.98] transition-all text-sm uppercase tracking-widest">Semak
+                Kekosongan Slot</button>
+        </div>
+    </div>
+
+    <!-- Lightbox Overlay -->
+    <div id="lightbox"
+        class="fixed inset-0 bg-dark/95 backdrop-blur-md z-[110] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <button id="close-lightbox"
+            class="absolute top-6 right-6 text-white/50 hover:text-gold text-4xl transition-colors">&times;</button>
+        <img id="lightbox-img" src="" alt="Fullscreen Image"
+            class="max-w-[90vw] max-h-[90vh] object-contain rounded-xl shadow-2xl transform scale-95 transition-transform duration-300">
+    </div>
+
+    <!-- Time Slot Selection Modal -->
+    <div id="pub-time-modal"
+        class="fixed inset-0 bg-dark/90 backdrop-blur-sm z-[115] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div
+            class="bg-charcoal border border-gold/20 rounded-3xl p-6 w-full max-w-lg shadow-[0_0_30px_rgba(212,175,55,0.1)] relative max-h-[85vh] flex flex-col">
+            <button
+                onclick="document.getElementById('pub-time-modal').classList.add('opacity-0'); setTimeout(() => document.getElementById('pub-time-modal').classList.add('hidden'), 300);"
+                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-ivory/50 hover:text-gold hover:bg-white/10 transition-colors z-10">&times;</button>
+            <div class="text-center mb-6 shrink-0 mt-2">
+                <h3 class="text-2xl font-serif font-bold text-gradient-gold">Pilih Waktu</h3>
+                <p class="text-sm text-ivory/60 mt-1" id="pub-time-date-label">Tarikh: -</p>
+            </div>
+            <div class="flex-1 overflow-y-auto pr-2 pb-2">
+                <div id="pub-time-slots-container" class="grid grid-cols-2 gap-3">
+                    <!-- Slots rendered by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet Booking Form -->
+    <div id="pub-sheet-backdrop"
+        class="fixed inset-0 bg-dark/80 backdrop-blur-sm z-[118] hidden opacity-0 transition-opacity duration-300">
+    </div>
+    <div id="pub-sheet"
+        class="fixed bottom-0 left-0 right-0 bg-charcoal/95 backdrop-blur-2xl rounded-t-[2rem] z-[120] transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] max-h-[90vh] overflow-y-auto border-t border-gold/20 pb-safe">
+        <div class="p-6 md:p-8 max-w-lg mx-auto">
+            <button onclick="window.closeBookingSheet()"
+                class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-ivory/50 hover:text-gold hover:bg-white/10 transition-colors z-[130]">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-2xl font-serif font-bold text-center mb-2 text-gradient-gold">Booking Form</h3>
+            <p class="text-center text-ivory/60 text-xs mb-8">Isi maklumat di bawah untuk menempah slot. Anda akan
+                dibawa ke WhatsApp selepas tekan Hantar.</p>
+
+            <form id="pub-booking-form" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/80 ml-1">Nama Penuh</label>
+                    <input type="text" id="book-name" required placeholder="Contoh: Nuriz"
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/80 ml-1">Tarikh Pilihan</label>
+                    <input type="date" id="book-date" required style="color-scheme: dark;"
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold transition-colors cursor-pointer">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/80 ml-1">Masa Pilihan</label>
+                    <select id="book-time" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold appearance-none transition-colors">
+                        <option value="" disabled selected>Pilih Masa</option>
+                        <option value="07:00:00">07:00 AM</option>
+                        <option value="10:00:00">10:00 AM</option>
+                        <option value="14:00:00">02:00 PM</option>
+                        <option value="17:00:00">05:00 PM</option>
+                        <option value="20:30:00">08:30 PM</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/80 ml-1">Pakej Pilihan</label>
+                    <select id="book-package" required
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold appearance-none transition-colors">
+                        <option value="" disabled selected>Memuatkan Pakej...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-ivory/80 ml-1">Lokasi Bersiap (Alamat Penuh /
+                        Kawasan)</label>
+                    <textarea id="book-location" required rows="2" placeholder="Cth: Taiping, Perak / Hotel X"
+                        class="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-dark text-white focus:bg-charcoal focus:outline-none focus:border-gold transition-colors resize-none"></textarea>
+                </div>
+
+                <button type="submit"
+                    class="w-full mt-4 bg-gradient-to-r from-gold to-[#AA771C] text-dark font-bold py-4 rounded-xl shadow-[0_8px_20px_rgba(212,175,55,0.3)] hover:brightness-110 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+                    <i class="fab fa-whatsapp text-xl"></i> Hantar ke WhatsApp
                 </button>
             </form>
         </div>
@@ -172,4 +961,5 @@
     <!-- Scripts -->
     <script src="js/public.js"></script>
 </body>
+
 </html>
