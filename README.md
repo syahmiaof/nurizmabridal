@@ -1,9 +1,9 @@
-# ✨ Nuriza Bridal - Henna Pengantin ✨
+# ✨ Nurizma Bridal - Henna Pengantin ✨
 
 ```
     ╔═══════════════════════════════════════════════════════════╗
     ║          🌸 SENI HENNA PENGANTIN TERBAIK 🌸               ║
-    ║                     NURIZA BRIDAL                         ║
+    ║                     NURIZMA BRIDAL                         ║
     ║          Keindahan Tradisi dalam Setiap Corak             ║
     ╚═══════════════════════════════════════════════════════════╝
 ```
