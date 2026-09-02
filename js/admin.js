@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch Bookings for the day
         const { data: bData } = await supabaseClient.from('bookings')
             .select(`
-                id, date, customer_name, customer_phone, start_time, end_time, details_lokasi_map, package_id,
+                id, date, customer_name, customer_phone, start_time, end_time, details_lokasi_map, package_id, color_selection,
                 bayaran (amount_paid, balance)
             `)
             .eq('date', dateStr);
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <div class="font-bold text-ivory flex items-center gap-2">
                                     ${b.customer_name} <i class="fas fa-check text-green-400 text-xs"></i>
                                 </div>
-                                <div class="text-[10px] text-ivory/60 mt-1">${pkgName}</div>
+                                <div class="text-[10px] text-ivory/60 mt-1">${pkgName}${b.color_selection ? ' | ' + b.color_selection : ''}</div>
                             </div>
                         </div>
                         <div class="flex gap-2 relative z-10">
@@ -430,13 +430,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const customer_name = document.getElementById('add-name').value;
         const customer_phone = document.getElementById('add-phone').value;
         const package_id = document.getElementById('add-package').value;
+        const color_selection = document.getElementById('add-color').value;
         const details_lokasi_map = document.getElementById('add-location').value;
         const customPrice = document.getElementById('add-custom-price').value;
 
         const finalPrice = customPrice ? parseFloat(customPrice) : packagePrices[package_id];
 
         const { data: bData, error } = await supabaseClient.from('bookings').insert([{
-            date, start_time, end_time, customer_name, customer_phone, package_id, details_lokasi_map
+            date, start_time, end_time, customer_name, customer_phone, package_id, color_selection, details_lokasi_map
         }]).select();
 
         if (error) {
@@ -471,6 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const customer_name = document.getElementById('edit-name').value;
         const customer_phone = document.getElementById('edit-phone').value;
         const package_id = document.getElementById('edit-package').value;
+        const color_selection = document.getElementById('edit-color').value;
         const details_lokasi_map = document.getElementById('edit-location').value;
         const customPrice = document.getElementById('edit-custom-price').value;
 
@@ -478,7 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const finalPrice = customPrice ? parseFloat(customPrice) : packagePrices[package_id];
 
         const { error: bError } = await supabaseClient.from('bookings').update({
-            date, start_time, end_time, customer_name, customer_phone, package_id, details_lokasi_map
+            date, start_time, end_time, customer_name, customer_phone, package_id, color_selection, details_lokasi_map
         }).eq('id', id);
 
         if (bError) {
@@ -623,6 +625,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="text-ivory/50">Pakej</span>
                     <span class="font-semibold text-right">${pkgName}</span>
                 </div>
+                <div class="flex justify-between border-b border-white/10 pb-2">
+                    <span class="text-ivory/50">Warna</span>
+                    <span class="font-semibold text-right">${b.color_selection || '-'}</span>
+                </div>
                 <div class="flex justify-between">
                     <span class="text-ivory/50">Harga (RM)</span>
                     <span class="font-semibold text-gold">${(() => {
@@ -663,6 +669,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('edit-name').value = b.customer_name || '';
         document.getElementById('edit-phone').value = b.customer_phone || '';
         document.getElementById('edit-package').value = b.package_id || '';
+        document.getElementById('edit-color').value = b.color_selection || '';
         
         let customPrice = '';
         let paymentStatus = 'Pending Deposit';
@@ -799,7 +806,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <tr class="hover:bg-white/5 transition-colors">
                         <td class="px-4 py-3"><div class="font-bold">${dDate}</div><div class="text-xs text-gold">${dTime}</div></td>
                         <td class="px-4 py-3"><div class="font-bold text-white">${b.name || b.customer_name}</div><div class="text-xs text-ivory/60">${b.phone || b.customer_phone}</div></td>
-                        <td class="px-4 py-3 text-xs opacity-90 truncate max-w-[150px]" title="${pkgName}">${pkgName}</td>
+                        <td class="px-4 py-3 text-xs opacity-90 truncate max-w-[150px]" title="${pkgName}">${pkgName}${b.color_selection ? '<br><span class="text-[10px] text-ivory/50">' + b.color_selection + '</span>' : ''}</td>
                         <td class="px-4 py-3"><div class="font-bold text-white">RM ${total_price.toFixed(2)}</div><div class="mt-1">${payBadge}</div></td>
                         <td class="px-4 py-3 text-center">
                             <button onclick="window.openEditBookingModal('${b.id}')" class="text-gold hover:text-white mx-1 transition-colors" title="Edit"><i class="fas fa-edit"></i></button>

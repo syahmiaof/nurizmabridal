@@ -385,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const date = document.getElementById('book-date').value;
             const time = document.getElementById('book-time').value;
             const pkg = document.getElementById('book-package').value;
+            const color = document.getElementById('book-color').value;
             const location = document.getElementById('book-location').value;
 
             const timeFormatted = formatTime12HrPub(time);
@@ -394,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                          `*Tarikh:* ${date}\n` +
                          `*Masa:* ${timeFormatted}\n` +
                          `*Pakej:* ${pkg}\n` +
+                         `*Warna Inai:* ${color}\n` +
                          `*Lokasi Bersiap:* ${location}\n\n` +
                          `Terima kasih!`;
 
