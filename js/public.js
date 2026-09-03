@@ -590,17 +590,14 @@ const showSocialProof = () => {
     // Pick a random recent booking
     const b = recentBookings[Math.floor(Math.random() * recentBookings.length)];
     
-    // Format name (first word) and location (first part before comma)
+    // Format name (first word)
     let name = (b.customer_name || 'Seseorang').split(' ')[0];
     name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-    
-    let loc = (b.details_lokasi_map || 'Taiping').split(',')[0].split('\n')[0];
-    if (loc.length > 20) loc = 'Kawasan berdekatan'; // Fallback if too long
     
     const pkg = localPackagesMap[b.package_id] || 'Pakej Inai';
     const timeAgo = Math.floor(Math.random() * 59) + 1; // 1 to 59 mins
     
-    const msg = `${name} dari ${loc} baru sahaja menempah ${pkg}`;
+    const msg = `${name} baru sahaja menempah ${pkg}`;
 
     // Create Toast Element
     const toast = document.createElement('div');
