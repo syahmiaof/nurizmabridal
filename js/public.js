@@ -333,11 +333,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 dayDiv.title = 'Telah Penuh';
             } else if (count >= 2) {
                 // Hampir Penuh (Urgency)
-                dayDiv.classList.add('bg-orange-500/20', 'text-orange-400', 'font-bold', 'cursor-pointer', 'shadow-[0_0_10px_rgba(249,115,22,0.3)]');
+                dayDiv.classList.add('bg-gold/10', 'text-gold', 'font-bold', 'cursor-pointer', 'shadow-[0_0_15px_rgba(212,175,55,0.2)]', 'border', 'border-gold/30');
                 dayDiv.title = 'Hampir Penuh - Tempah Segera!';
                 // Add a small dot indicator
                 const dot = document.createElement('div');
-                dot.className = 'absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse';
+                dot.className = 'absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-gold/80 shadow-[0_0_5px_#d4af37] rounded-full animate-pulse';
                 dayDiv.appendChild(dot);
 
                 dayDiv.addEventListener('click', () => {
@@ -559,27 +559,48 @@ window.closeBooking = window.closeBookingSheet;
 
 // --- SOCIAL PROOF POPUP LOGIC ---
 const socialProofContainer = document.getElementById('social-proof-container');
-const proofNames = ['Aisyah', 'Nabila', 'Farah', 'Siti', 'Nurul', 'Amira', 'Syifa', 'Atikah', 'Izzati'];
-const proofLocations = ['Taiping', 'Kamunting', 'Changkat Jering', 'Kuala Kangsar', 'Ipoh', 'Bagan Serai'];
-const proofPackages = ['Pakej Tangan Sahaja', 'Pakej Tangan & Kaki', 'Pakej Family', 'Pakej Pengantin & Family'];
-const proofActions = ['baru sahaja menempah', 'sedang melihat tarikh untuk', 'telah mengesahkan tempahan'];
+let recentBookings = [];
+let localPackagesMap = {};
+
+const initSocialProof = async () => {
+    if (!socialProofContainer || typeof supabaseClient === 'undefined') return;
+
+    // Fetch packages for mapping
+    const { data: pData } = await supabaseClient.from('packages').select('id, name');
+    if (pData) {
+        pData.forEach(p => localPackagesMap[p.id] = p.name);
+    }
+
+    // Fetch recent 30 bookings
+    const { data: bData } = await supabaseClient.from('bookings').select('customer_name, details_lokasi_map, package_id').order('created_at', { ascending: false }).limit(30);
+    if (bData && bData.length > 0) {
+        recentBookings = bData;
+        
+        // Start loop
+        setTimeout(() => {
+            showSocialProof();
+            setInterval(showSocialProof, Math.floor(Math.random() * 30000) + 15000);
+        }, 5000);
+    }
+};
 
 const showSocialProof = () => {
-    if (!socialProofContainer) return;
+    if (recentBookings.length === 0) return;
     
-    // Generate random data
-    const name = proofNames[Math.floor(Math.random() * proofNames.length)];
-    const loc = proofLocations[Math.floor(Math.random() * proofLocations.length)];
-    const pkg = proofPackages[Math.floor(Math.random() * proofPackages.length)];
-    const action = proofActions[Math.floor(Math.random() * proofActions.length)];
+    // Pick a random recent booking
+    const b = recentBookings[Math.floor(Math.random() * recentBookings.length)];
+    
+    // Format name (first word) and location (first part before comma)
+    let name = (b.customer_name || 'Seseorang').split(' ')[0];
+    name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    
+    let loc = (b.details_lokasi_map || 'Taiping').split(',')[0].split('\n')[0];
+    if (loc.length > 20) loc = 'Kawasan berdekatan'; // Fallback if too long
+    
+    const pkg = localPackagesMap[b.package_id] || 'Pakej Inai';
     const timeAgo = Math.floor(Math.random() * 59) + 1; // 1 to 59 mins
     
-    let msg = '';
-    if (action.includes('melihat')) {
-        msg = `Seseorang dari ${loc} ${action} ${pkg}`;
-    } else {
-        msg = `${name} dari ${loc} ${action} ${pkg}`;
-    }
+    const msg = `${name} dari ${loc} baru sahaja menempah ${pkg}`;
 
     // Create Toast Element
     const toast = document.createElement('div');
@@ -596,26 +617,12 @@ const showSocialProof = () => {
 
     socialProofContainer.appendChild(toast);
 
-    // Trigger animation in
-    setTimeout(() => {
-        toast.classList.remove('translate-y-10', 'opacity-0');
-    }, 100);
-
-    // Trigger animation out & remove
+    setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 100);
     setTimeout(() => {
         toast.classList.add('translate-y-10', 'opacity-0');
         setTimeout(() => toast.remove(), 500);
-    }, 6000); // visible for 6 seconds
+    }, 6000);
 };
 
-// Start social proof loop if on public site
-if (socialProofContainer) {
-    // Initial delay before first popup
-    setTimeout(() => {
-        showSocialProof();
-        // Recurring random popup every 15 to 45 seconds
-        setInterval(showSocialProof, Math.floor(Math.random() * 30000) + 15000);
-    }, 5000);
-}
-
+initSocialProof();
 // End of file
