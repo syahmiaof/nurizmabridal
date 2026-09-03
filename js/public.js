@@ -594,10 +594,9 @@ const showSocialProof = () => {
     let name = (b.customer_name || 'Seseorang').split(' ')[0];
     name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     
-    const pkg = localPackagesMap[b.package_id] || 'Pakej Inai';
     const timeAgo = Math.floor(Math.random() * 59) + 1; // 1 to 59 mins
     
-    const msg = `${name} baru sahaja menempah ${pkg}`;
+    const msg = `${name} telah membuat booking.`;
 
     // Create Toast Element
     const toast = document.createElement('div');
