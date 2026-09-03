@@ -331,9 +331,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Full slot
                 dayDiv.classList.add('bg-red-500/20', 'text-red-500', 'font-bold', 'opacity-70', 'cursor-not-allowed');
                 dayDiv.title = 'Telah Penuh';
+            } else if (count >= 2) {
+                // Hampir Penuh (Urgency)
+                dayDiv.classList.add('bg-orange-500/20', 'text-orange-400', 'font-bold', 'cursor-pointer', 'shadow-[0_0_10px_rgba(249,115,22,0.3)]');
+                dayDiv.title = 'Hampir Penuh - Tempah Segera!';
+                // Add a small dot indicator
+                const dot = document.createElement('div');
+                dot.className = 'absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse';
+                dayDiv.appendChild(dot);
+
+                dayDiv.addEventListener('click', () => {
+                    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                    window.openPubTimeModal(dateStr);
+                });
             } else {
                 // Available
                 dayDiv.classList.add('hover:bg-gold/10', 'text-ivory', 'font-semibold', 'shadow-[0_2px_10px_rgba(212,175,55,0.05)]', 'cursor-pointer');
+                dayDiv.title = 'Kekosongan Tersedia';
                 dayDiv.addEventListener('click', () => {
                     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                     window.openPubTimeModal(dateStr);
@@ -542,5 +556,66 @@ if (document.getElementById('pub-sheet-backdrop')) {
 // Keep old fallback just in case
 window.openBooking = window.openBookingSheet;
 window.closeBooking = window.closeBookingSheet;
+
+// --- SOCIAL PROOF POPUP LOGIC ---
+const socialProofContainer = document.getElementById('social-proof-container');
+const proofNames = ['Aisyah', 'Nabila', 'Farah', 'Siti', 'Nurul', 'Amira', 'Syifa', 'Atikah', 'Izzati'];
+const proofLocations = ['Taiping', 'Kamunting', 'Changkat Jering', 'Kuala Kangsar', 'Ipoh', 'Bagan Serai'];
+const proofPackages = ['Pakej Tangan Sahaja', 'Pakej Tangan & Kaki', 'Pakej Family', 'Pakej Pengantin & Family'];
+const proofActions = ['baru sahaja menempah', 'sedang melihat tarikh untuk', 'telah mengesahkan tempahan'];
+
+const showSocialProof = () => {
+    if (!socialProofContainer) return;
+    
+    // Generate random data
+    const name = proofNames[Math.floor(Math.random() * proofNames.length)];
+    const loc = proofLocations[Math.floor(Math.random() * proofLocations.length)];
+    const pkg = proofPackages[Math.floor(Math.random() * proofPackages.length)];
+    const action = proofActions[Math.floor(Math.random() * proofActions.length)];
+    const timeAgo = Math.floor(Math.random() * 59) + 1; // 1 to 59 mins
+    
+    let msg = '';
+    if (action.includes('melihat')) {
+        msg = `Seseorang dari ${loc} ${action} ${pkg}`;
+    } else {
+        msg = `${name} dari ${loc} ${action} ${pkg}`;
+    }
+
+    // Create Toast Element
+    const toast = document.createElement('div');
+    toast.className = 'bg-charcoal/90 backdrop-blur-md border border-gold/30 p-3 rounded-2xl shadow-lg flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 ease-out pointer-events-auto max-w-[300px] md:max-w-xs';
+    toast.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-gold/20 flex-shrink-0 flex items-center justify-center text-gold">
+            <i class="fas fa-bell text-xs animate-pulse"></i>
+        </div>
+        <div class="flex-1">
+            <p class="text-[11px] md:text-xs text-ivory leading-tight font-medium">${msg}</p>
+            <p class="text-[9px] text-gold/70 mt-1">${timeAgo} minit lepas</p>
+        </div>
+    `;
+
+    socialProofContainer.appendChild(toast);
+
+    // Trigger animation in
+    setTimeout(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+    }, 100);
+
+    // Trigger animation out & remove
+    setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 500);
+    }, 6000); // visible for 6 seconds
+};
+
+// Start social proof loop if on public site
+if (socialProofContainer) {
+    // Initial delay before first popup
+    setTimeout(() => {
+        showSocialProof();
+        // Recurring random popup every 15 to 45 seconds
+        setInterval(showSocialProof, Math.floor(Math.random() * 30000) + 15000);
+    }, 5000);
+}
 
 // End of file
