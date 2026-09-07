@@ -425,6 +425,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const start_time = document.getElementById('add-time').value;
         // End time is simply start time + 1 hour for MVP
         let [h, m, s] = start_time.split(':');
+        s = s || '00';
+        m = m || '00';
         const end_time = `${String(parseInt(h) + 1).padStart(2,'0')}:${m}:${s}`;
         
         const customer_name = document.getElementById('add-name').value;
@@ -467,6 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         let [h, m, s] = start_time.split(':');
         s = s || '00';
+        m = m || '00';
         const end_time = `${String(parseInt(h) + 1).padStart(2,'0')}:${m}:${s}`;
 
         const customer_name = document.getElementById('edit-name').value;
