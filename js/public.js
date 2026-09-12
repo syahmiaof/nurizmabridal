@@ -299,14 +299,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const endDateString = `${year}-${String(month+1).padStart(2,'0')}-${daysInMonth}`;
         
         const { data: bookingsData } = await supabaseClient.from('bookings')
-            .select('date')
+            .select('date, start_time')
             .gte('date', startDateString)
             .lte('date', endDateString);
             
         const bookedDaysCount = {};
+        const officialSlots = ['10:00:00', '14:00:00', '17:00:00', '20:30:00'];
+        const bookedOfficialSlots = {};
+
         (bookingsData || []).forEach(b => {
             const d = parseInt(b.date.split('-')[2]);
             bookedDaysCount[d] = (bookedDaysCount[d] || 0) + 1;
+            
+            if (!bookedOfficialSlots[d]) {
+                bookedOfficialSlots[d] = new Set();
+            }
+            if (officialSlots.includes(b.start_time)) {
+                bookedOfficialSlots[d].add(b.start_time);
+            }
         });
 
         pubCalendarGrid.innerHTML = '';
@@ -327,7 +337,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const count = bookedDaysCount[i] || 0;
-            if (count >= 5) {
+            const officialBookedCount = (bookedOfficialSlots[i] ? bookedOfficialSlots[i].size : 0);
+            
+            if (officialBookedCount >= officialSlots.length) {
                 // Full slot
                 dayDiv.classList.add('bg-red-500/20', 'text-red-500', 'font-bold', 'opacity-70', 'cursor-not-allowed');
                 dayDiv.title = 'Telah Penuh';
