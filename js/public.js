@@ -343,10 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Full slot
                 dayDiv.classList.add('bg-red-500/20', 'text-red-500', 'font-bold', 'opacity-70', 'cursor-not-allowed');
                 dayDiv.title = 'Telah Penuh';
-            } else if (count >= 2) {
-                // Hampir Penuh (Urgency)
+            } else if (count >= 1) {
+                // Ada tempahan (Urgency)
                 dayDiv.classList.add('bg-gold/10', 'text-gold', 'font-bold', 'cursor-pointer', 'shadow-[0_0_15px_rgba(212,175,55,0.2)]', 'border', 'border-gold/30');
-                dayDiv.title = 'Hampir Penuh - Tempah Segera!';
+                dayDiv.title = 'Ada Tempahan - Tempah Segera!';
                 // Add a small dot indicator
                 const dot = document.createElement('div');
                 dot.className = 'absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-gold/80 shadow-[0_0_5px_#d4af37] rounded-full animate-pulse';
