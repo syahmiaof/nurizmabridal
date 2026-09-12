@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .lte('date', endDateString);
             
         const bookedDaysCount = {};
-        const officialSlots = ['10:00:00', '14:00:00', '17:00:00', '20:30:00'];
+        const officialSlots = ['07:00:00', '10:00:00', '14:00:00', '17:00:00', '20:30:00'];
         const bookedOfficialSlots = {};
 
         (bookingsData || []).forEach(b => {
