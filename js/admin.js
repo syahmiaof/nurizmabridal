@@ -89,12 +89,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const isSelected = formatDateStr(d) === formatDateStr(selectedDate);
             const isToday = formatDateStr(d) === formatDateStr(today);
+            
+            const todayMidnight = new Date(today);
+            todayMidnight.setHours(0,0,0,0);
+            const dMidnight = new Date(d);
+            dMidnight.setHours(0,0,0,0);
+            const isPast = dMidnight < todayMidnight;
 
             const el = document.createElement('div');
-            el.className = `flex flex-col items-center justify-center min-w-[70px] h-[80px] rounded-2xl cursor-pointer transition-all snap-center ${
-                isSelected ? 'bg-gradient-to-b from-gold to-gold/70 text-dark shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105' : 
-                isToday ? 'bg-white/10 border border-gold/50 text-gold' : 'bg-charcoal border border-white/5 text-ivory/50 hover:bg-white/5'
-            }`;
+            let baseStyle = '';
+            if (isSelected) {
+                baseStyle = 'bg-gradient-to-b from-gold to-gold/70 text-dark shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105';
+            } else if (isToday) {
+                baseStyle = 'bg-white/10 border border-gold/50 text-gold';
+            } else if (isPast) {
+                baseStyle = 'bg-black/30 border border-white/5 text-ivory/20 hover:bg-white/5';
+            } else {
+                baseStyle = 'bg-charcoal border border-white/5 text-ivory/60 hover:bg-white/10';
+            }
+
+            el.className = `flex flex-col items-center justify-center min-w-[70px] h-[80px] rounded-2xl cursor-pointer transition-all snap-center ${baseStyle}`;
             
             el.innerHTML = `
                 <span class="text-[10px] font-bold tracking-wider mb-1">${dayNames[d.getDay()]}</span>
@@ -215,6 +229,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const allSlotsArray = Array.from(allSlotsSet).sort();
 
+        const todayDate = new Date();
+        todayDate.setHours(0,0,0,0);
+        const selDate = new Date(selectedDate);
+        selDate.setHours(0,0,0,0);
+        const isPastDate = selDate < todayDate;
+
         for (const timeStr of allSlotsArray) {
             const displayTime = formatTime12Hr(timeStr);
             const timeParts = displayTime.split(' ');
@@ -222,6 +242,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const b = currentBookings.find(bk => bk.start_time === timeStr);
 
             const el = document.createElement('div');
+
+            const pastBadge = isPastDate ? `<span class="bg-gray-500/20 text-gray-400 text-[10px] px-1.5 py-0.5 rounded border border-gray-500/30">Selesai</span>` : '';
 
             if (b) {
                 // === BOOKED SLOT ===
@@ -232,17 +254,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 if (window.slotViewMode === 'list') {
-                    el.className = 'bg-[#0f2e20] border border-green-500/30 rounded-2xl p-4 flex items-center justify-between shadow-lg relative overflow-hidden';
+                    el.className = isPastDate ? 'bg-charcoal border border-white/5 rounded-2xl p-4 flex items-center justify-between shadow-sm relative overflow-hidden opacity-80' : 'bg-[#0f2e20] border border-green-500/30 rounded-2xl p-4 flex items-center justify-between shadow-lg relative overflow-hidden';
                     el.innerHTML = `
                         <div class="flex items-center gap-4 relative z-10">
                             <div class="w-16 flex flex-col items-center border-r border-white/10 pr-4">
-                                <i class="far fa-clock text-green-400 mb-1"></i>
+                                <i class="far fa-clock ${isPastDate ? 'text-gray-400' : 'text-green-400'} mb-1"></i>
                                 <span class="text-xs font-bold text-ivory">${timeParts[0]}</span>
                                 <span class="text-[9px] text-ivory/50">${timeParts[1]}</span>
                             </div>
                             <div>
                                 <div class="font-bold text-ivory flex items-center gap-2">
-                                    ${b.customer_name} <i class="fas fa-check text-green-400 text-xs"></i>
+                                    ${b.customer_name} ${isPastDate ? pastBadge : '<i class="fas fa-check text-green-400 text-xs"></i>'}
                                 </div>
                                 <div class="text-[10px] text-ivory/60 mt-1">${pkgName}${b.color_selection ? ' | ' + b.color_selection : ''}</div>
                             </div>
@@ -252,29 +274,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <i class="far fa-user"></i>
                             </button>
                             ${b.customer_phone ? `
-                            <a href="https://wa.me/60${b.customer_phone.replace(/^0/, '')}" target="_blank" class="w-10 h-10 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center hover:bg-green-500/40 transition-colors z-20">
+                            <a href="https://wa.me/60${b.customer_phone.replace(/^0/, '')}" target="_blank" class="w-10 h-10 rounded-full ${isPastDate ? 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/40' : 'bg-green-500/20 text-green-400 hover:bg-green-500/40'} flex items-center justify-center transition-colors z-20">
                                 <i class="fab fa-whatsapp text-lg"></i>
                             </a>
                             ` : ''}
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-green-900/10 pointer-events-none"></div>
+                        ${!isPastDate ? '<div class="absolute inset-0 bg-gradient-to-r from-transparent to-green-900/10 pointer-events-none"></div>' : ''}
                     `;
                 } 
                 else if (window.slotViewMode === 'grid') {
-                    el.className = 'bg-[#0f2e20] border border-green-500/30 rounded-2xl p-3 flex flex-col items-center justify-center relative overflow-hidden aspect-[2/1] shadow-lg cursor-pointer hover:brightness-110 transition-all';
+                    el.className = isPastDate ? 'bg-charcoal border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center relative overflow-hidden aspect-[2/1] shadow-sm cursor-pointer hover:brightness-110 transition-all opacity-80' : 'bg-[#0f2e20] border border-green-500/30 rounded-2xl p-3 flex flex-col items-center justify-center relative overflow-hidden aspect-[2/1] shadow-lg cursor-pointer hover:brightness-110 transition-all';
                     el.onclick = () => openBookingDetails(b.id);
                     el.innerHTML = `
                         <div class="text-ivory font-bold mb-2">${displayTime}</div>
-                        <div class="text-xs text-ivory font-semibold truncate w-full text-center px-1">
-                            ${b.customer_name} <i class="fas fa-check text-green-400 text-[10px]"></i>
+                        <div class="text-xs text-ivory font-semibold truncate w-full text-center px-1 flex flex-col items-center justify-center gap-1">
+                            <div>${b.customer_name} ${isPastDate ? '' : '<i class="fas fa-check text-green-400 text-[10px]"></i>'}</div>
+                            ${isPastDate ? pastBadge : ''}
                         </div>
                         ${b.customer_phone ? `
-                            <div class="absolute bottom-1 right-2 text-green-500/30"><i class="fab fa-whatsapp"></i></div>
+                            <div class="absolute bottom-1 right-2 ${isPastDate ? 'text-gray-500/50' : 'text-green-500/30'}"><i class="fab fa-whatsapp"></i></div>
                         ` : ''}
                     `;
                 }
                 else if (window.slotViewMode === 'compact') {
-                    el.className = 'bg-[#0f2e20] border border-green-500/30 rounded-xl p-2 flex flex-col items-center justify-center relative overflow-hidden aspect-[2/1] shadow-lg cursor-pointer hover:brightness-110 transition-all';
+                    el.className = isPastDate ? 'bg-charcoal border border-white/5 rounded-xl p-2 flex flex-col items-center justify-center relative overflow-hidden aspect-[2/1] shadow-sm cursor-pointer hover:brightness-110 transition-all opacity-80' : 'bg-[#0f2e20] border border-green-500/30 rounded-xl p-2 flex flex-col items-center justify-center relative overflow-hidden aspect-[2/1] shadow-lg cursor-pointer hover:brightness-110 transition-all';
                     el.onclick = () => openBookingDetails(b.id);
                     el.innerHTML = `
                         <div class="text-white/60 line-through font-bold text-xs mb-1">${timeParts[0]}</div>
@@ -284,32 +307,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 // === AVAILABLE SLOT ===
                 if (window.slotViewMode === 'list') {
-                    el.className = 'border border-white/10 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors group';
+                    el.className = isPastDate ? 'border border-white/5 bg-white/5 rounded-2xl p-4 flex items-center justify-between opacity-40' : 'border border-white/10 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors group';
                     el.innerHTML = `
                         <div class="flex items-center gap-4">
                             <div class="w-16 flex flex-col items-center border-r border-white/10 pr-4">
-                                <i class="far fa-clock text-gold/50 group-hover:text-gold mb-1 transition-colors"></i>
-                                <span class="text-xs font-bold text-ivory/70 group-hover:text-ivory transition-colors">${timeParts[0]}</span>
-                                <span class="text-[9px] text-ivory/40 group-hover:text-ivory/60 transition-colors">${timeParts[1]}</span>
+                                <i class="far fa-clock text-gold/50 ${isPastDate ? '' : 'group-hover:text-gold transition-colors'} mb-1"></i>
+                                <span class="text-xs font-bold text-ivory/70 ${isPastDate ? '' : 'group-hover:text-ivory transition-colors'}">${timeParts[0]}</span>
+                                <span class="text-[9px] text-ivory/40 ${isPastDate ? '' : 'group-hover:text-ivory/60 transition-colors'}">${timeParts[1]}</span>
                             </div>
                         </div>
-                        <div class="text-sm font-semibold text-ivory/50 group-hover:text-gold transition-colors flex items-center gap-2 pr-2">
-                            Available <i class="fas fa-plus"></i>
+                        <div class="text-sm font-semibold text-ivory/50 ${isPastDate ? '' : 'group-hover:text-gold transition-colors'} flex items-center gap-2 pr-2">
+                            ${isPastDate ? 'Berlalu' : 'Available <i class="fas fa-plus"></i>'}
                         </div>
                     `;
                 }
                 else if (window.slotViewMode === 'grid') {
-                    el.className = 'border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-colors group aspect-[2/1]';
+                    el.className = isPastDate ? 'border border-white/5 bg-white/5 rounded-2xl p-3 flex flex-col items-center justify-center opacity-40 aspect-[2/1]' : 'border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-colors group aspect-[2/1]';
                     el.innerHTML = `
-                        <div class="text-gold/70 group-hover:text-gold font-bold mb-2 transition-colors">${displayTime}</div>
-                        <div class="text-xs text-ivory/50 group-hover:text-gold transition-colors font-medium">Available +</div>
+                        <div class="text-gold/70 ${isPastDate ? '' : 'group-hover:text-gold transition-colors'} font-bold mb-2">${displayTime}</div>
+                        <div class="text-xs text-ivory/50 ${isPastDate ? '' : 'group-hover:text-gold transition-colors'} font-medium">${isPastDate ? 'Berlalu' : 'Available +'}</div>
                     `;
                 }
                 else if (window.slotViewMode === 'compact') {
-                    el.className = 'border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-gold/30 transition-colors group aspect-[2/1]';
+                    el.className = isPastDate ? 'border border-white/5 bg-white/5 rounded-xl p-2 flex flex-col items-center justify-center opacity-40 aspect-[2/1]' : 'border border-white/10 rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-gold/30 transition-colors group aspect-[2/1]';
                     el.innerHTML = `
-                        <div class="text-gold/80 font-bold text-xs mb-1 group-hover:text-gold">${timeParts[0]}</div>
-                        <div class="text-[9px] text-ivory/50 group-hover:text-ivory/80">${timeParts[1]}</div>
+                        <div class="text-gold/80 font-bold text-xs mb-1 ${isPastDate ? '' : 'group-hover:text-gold'}">${timeParts[0]}</div>
+                        <div class="text-[9px] text-ivory/50 ${isPastDate ? '' : 'group-hover:text-ivory/80'}">${timeParts[1]}</div>
                     `;
                 }
 
