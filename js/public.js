@@ -335,35 +335,58 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isToday) {
                 dayDiv.classList.add('ring-1', 'ring-gold/50');
             }
+            
+            const todayDate = new Date();
+            todayDate.setHours(0,0,0,0);
+            const currentDate = new Date(year, month, i);
+            const isPast = currentDate < todayDate;
 
             const count = bookedDaysCount[i] || 0;
             const officialBookedCount = (bookedOfficialSlots[i] ? bookedOfficialSlots[i].size : 0);
             
             if (officialBookedCount >= officialSlots.length) {
                 // Full slot
-                dayDiv.classList.add('bg-red-500/20', 'text-red-500', 'font-bold', 'opacity-70', 'cursor-not-allowed');
-                dayDiv.title = 'Telah Penuh';
+                if (isPast) {
+                    dayDiv.classList.add('opacity-30', 'text-white/50', 'font-bold', 'cursor-not-allowed');
+                    dayDiv.title = 'Tarikh Telah Berlalu';
+                } else {
+                    dayDiv.classList.add('bg-red-500/20', 'text-red-500', 'font-bold', 'opacity-70', 'cursor-not-allowed');
+                    dayDiv.title = 'Telah Penuh';
+                }
             } else if (count >= 1) {
                 // Ada tempahan (Urgency)
-                dayDiv.classList.add('bg-gold/10', 'text-gold', 'font-bold', 'cursor-pointer', 'shadow-[0_0_15px_rgba(212,175,55,0.2)]', 'border', 'border-gold/30');
-                dayDiv.title = 'Ada Tempahan - Tempah Segera!';
-                // Add a small dot indicator
-                const dot = document.createElement('div');
-                dot.className = 'absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-gold/80 shadow-[0_0_5px_#d4af37] rounded-full animate-pulse';
-                dayDiv.appendChild(dot);
+                if (isPast) {
+                    dayDiv.classList.add('opacity-40', 'text-white/50', 'font-bold', 'cursor-not-allowed');
+                    dayDiv.title = 'Tarikh Telah Berlalu';
+                    const dot = document.createElement('div');
+                    dot.className = 'absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white/30 rounded-full';
+                    dayDiv.appendChild(dot);
+                } else {
+                    dayDiv.classList.add('bg-gold/10', 'text-gold', 'font-bold', 'cursor-pointer', 'shadow-[0_0_15px_rgba(212,175,55,0.2)]', 'border', 'border-gold/30');
+                    dayDiv.title = 'Ada Tempahan - Tempah Segera!';
+                    // Add a small dot indicator
+                    const dot = document.createElement('div');
+                    dot.className = 'absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-gold/80 shadow-[0_0_5px_#d4af37] rounded-full animate-pulse';
+                    dayDiv.appendChild(dot);
 
-                dayDiv.addEventListener('click', () => {
-                    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                    window.openPubTimeModal(dateStr);
-                });
+                    dayDiv.addEventListener('click', () => {
+                        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                        window.openPubTimeModal(dateStr);
+                    });
+                }
             } else {
                 // Available
-                dayDiv.classList.add('hover:bg-gold/10', 'text-ivory', 'font-semibold', 'shadow-[0_2px_10px_rgba(212,175,55,0.05)]', 'cursor-pointer');
-                dayDiv.title = 'Kekosongan Tersedia';
-                dayDiv.addEventListener('click', () => {
-                    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                    window.openPubTimeModal(dateStr);
-                });
+                if (isPast) {
+                    dayDiv.classList.add('opacity-20', 'text-white/30', 'cursor-not-allowed');
+                    dayDiv.title = 'Tarikh Telah Berlalu';
+                } else {
+                    dayDiv.classList.add('hover:bg-gold/10', 'text-ivory', 'font-semibold', 'shadow-[0_2px_10px_rgba(212,175,55,0.05)]', 'cursor-pointer');
+                    dayDiv.title = 'Kekosongan Tersedia';
+                    dayDiv.addEventListener('click', () => {
+                        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                        window.openPubTimeModal(dateStr);
+                    });
+                }
             }
             pubCalendarGrid.appendChild(dayDiv);
         }
